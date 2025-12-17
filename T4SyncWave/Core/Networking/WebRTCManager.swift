@@ -1,0 +1,335 @@
+//
+//  WebRTCManager.swift
+//  T4SyncWave
+//
+//  Created by Ramon Gajardo on 12/15/25.
+//
+
+import Foundation
+import WebRTC
+import Combine
+import SwiftUI
+    
+protocol WebRTCPlaybackDelegate: AnyObject {
+    func didReceivePlayback(_ state: PlaybackState)
+}
+protocol WebRTCRoleDelegate: AnyObject {
+    func didReceiveRole(_ role: String)
+}
+final class WebRTCManager: NSObject, ObservableObject {
+    weak var roleDelegate: WebRTCRoleDelegate?
+    
+    static let shared = WebRTCManager()
+    weak var playbackDelegate: WebRTCPlaybackDelegate?
+        private var peerConnection: RTCPeerConnection?
+        private var dataChannel: RTCDataChannel?
+        private var factory: RTCPeerConnectionFactory!
+
+        override init() {
+            super.init()
+            RTCInitializeSSL()
+            factory = RTCPeerConnectionFactory()
+        }
+    
+
+    
+    func setRemoteAnswer(_ sdp: RTCSessionDescription) {
+        Task {
+            do {
+                try await   peerConnection?.setRemoteDescription(sdp)
+            } catch {
+                print("Error setting local description:", error)
+            }
+        }
+     
+    }
+    
+ 
+    
+    func addIceCandidate(_ candidate: RTCIceCandidate) {
+        Task {
+            do {
+                try await   peerConnection?.add(candidate)
+            } catch {
+                print("Error setting local description:", error)
+            }
+        }
+     
+    }
+    
+    func sendData<T: Codable>(_ object: T) {
+
+        guard let channel = dataChannel,
+              channel.readyState == .open else { return }
+
+        let data = try? JSONEncoder().encode(object)
+        let buffer = RTCDataBuffer(data: data!, isBinary: false)
+
+        channel.sendData(buffer)
+    }
+    
+    func connect() {
+        createPeerConnection()
+        createDataChannel()
+
+        createOffer { sdp in
+            // enviar sdp.sdp al backend
+        }
+    }
+    func handleSignaling(_ msg: [String: Any]) {
+
+        guard let type = msg["type"] as? String else { return }
+
+        switch type {
+        case "offer":
+            let sdp = RTCSessionDescription(
+                type: .offer,
+                sdp: msg["sdp"] as! String
+            )
+            setRemoteOffer(sdp)
+
+        case "answer":
+            let sdp = RTCSessionDescription(
+                type: .answer,
+                sdp: msg["sdp"] as! String
+            )
+            setRemoteAnswer(sdp)
+
+        case "ice-candidate":
+            let candidate = RTCIceCandidate(
+                sdp: msg["candidate"] as! String,
+                sdpMLineIndex: msg["sdpMLineIndex"] as! Int32,
+                sdpMid: msg["sdpMid"] as? String
+            )
+            addIceCandidate(candidate)
+
+        case "playback-state":
+            do {
+                let data = try JSONSerialization.data(withJSONObject: msg)
+                let playback = try JSONDecoder().decode(PlaybackMessage.self, from: data)
+
+                print("🎵 PlaybackMessage decodificado OK")
+
+                let state = PlaybackState(
+                    roomId: playback.room,
+                    trackUrl: playback.trackUrl,
+                    position: playback.position ?? 0,
+                    isPlaying: playback.isPlaying,
+                    timestamp: playback.timestamp
+                )
+
+                playbackDelegate?.didReceivePlayback(state)
+
+            } catch {
+                print("❌ Error decodificando PlaybackMessage:", error)
+            }
+
+        case "role":
+            if let role = msg["role"] as? String {
+                    DispatchQueue.main.async {
+                        self.roleDelegate?.didReceiveRole(role)
+                    }
+                }
+
+        default:
+            break
+        }
+    }
+
+}
+
+
+
+extension WebRTCManager {
+    func createOffer(onSDP: @escaping (RTCSessionDescription) -> Void) {
+
+        let constraints = RTCMediaConstraints(
+            mandatoryConstraints: ["OfferToReceiveAudio": "false"],
+            optionalConstraints: nil
+        )
+
+        peerConnection?.offer(for: constraints) { sdp, error in
+            guard let sdp = sdp else { return }
+
+            Task {
+                do {
+                    try await self.peerConnection?.setLocalDescription(sdp)
+                    
+                    await WebSocketSignaling.shared.send([
+                              "type": "offer",
+                              "sdp": sdp.sdp
+                          ])
+                } catch {
+                    print("Error setting local description:", error)
+                }
+            }
+            onSDP(sdp)
+        }
+    }
+}
+
+extension Notification.Name {
+    static let playbackSync = Notification.Name("playbackSync")
+}
+extension WebRTCManager {
+
+    func createPeerConnection() {
+
+        let config = RTCConfiguration()
+        config.sdpSemantics = .unifiedPlan
+        config.iceServers = [
+            RTCIceServer(urlStrings: ["stun:stun.l.google.com:19302"])
+        ]
+
+        let constraints = RTCMediaConstraints(
+            mandatoryConstraints: nil,
+            optionalConstraints: ["DtlsSrtpKeyAgreement": "true"]
+        )
+
+        peerConnection = factory.peerConnection(
+            with: config,
+            constraints: constraints,
+            delegate: self
+        )
+    }
+    func setRemoteOffer(_ offer: RTCSessionDescription) {
+
+        peerConnection?.setRemoteDescription(offer) { error in
+            if let error = error {
+                print("❌ Error setRemoteOffer:", error)
+                return
+            }
+
+            print("✅ Remote OFFER set")
+
+            self.createAnswer()
+        }
+    }
+    private func createAnswer() {
+
+        let constraints = RTCMediaConstraints(
+            mandatoryConstraints: ["OfferToReceiveAudio": "false"],
+            optionalConstraints: nil
+        )
+
+        peerConnection?.answer(for: constraints) { sdp, error in
+            if let error = error {
+                print("❌ Error createAnswer:", error)
+                return
+            }
+
+            guard let sdp = sdp else { return }
+         
+
+            Task {
+                do {
+                    try await self.peerConnection?.setLocalDescription(sdp)
+                } catch {
+                    print("Error setting local description:", error)
+                }
+            }
+          
+
+            WebSocketSignaling.shared.send([
+                "type": "answer",
+                "sdp": sdp.sdp
+            ])
+
+            print("📤 ANSWER enviado")
+        }
+    }
+
+}
+
+extension WebRTCManager {
+
+    func createDataChannel() {
+        let config = RTCDataChannelConfiguration()
+        config.isOrdered = true
+        config.maxRetransmits = 0
+
+        dataChannel = peerConnection?.dataChannel(
+            forLabel: "syncwave-data",
+            configuration: config
+        )
+
+        dataChannel?.delegate = self
+    }
+}
+extension WebRTCManager: RTCDataChannelDelegate {
+
+    func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
+        print("DataChannel state:", dataChannel.readyState)
+    }
+
+    func dataChannel(_ dataChannel: RTCDataChannel,
+                     didReceiveMessageWith buffer: RTCDataBuffer) {
+
+        guard let state = try? JSONDecoder()
+            .decode(PlaybackState.self, from: buffer.data) else { return }
+
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: .playbackSync,
+                object: state
+            )
+        }
+    }
+}
+
+
+extension WebRTCManager: RTCPeerConnectionDelegate {
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didChange stateChanged: RTCSignalingState) {
+        // no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didAdd stream: RTCMediaStream) {
+        // deprecated, no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didRemove stream: RTCMediaStream) {
+        // deprecated, no-op
+    }
+
+    func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
+        // no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didChange newState: RTCIceConnectionState) {
+        // no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didChange newState: RTCIceGatheringState) {
+        // no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didGenerate candidate: RTCIceCandidate) {
+        
+        WebSocketSignaling.shared.send([
+                "type": "ice-candidate",
+                "candidate": candidate.sdp,
+                "sdpMLineIndex": candidate.sdpMLineIndex,
+                "sdpMid": candidate.sdpMid ?? ""
+            ])
+        // enviar candidate a backend
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didRemove candidates: [RTCIceCandidate]) {
+        // no-op
+    }
+
+    func peerConnection(_ peerConnection: RTCPeerConnection,
+                        didOpen dataChannel: RTCDataChannel) {
+        self.dataChannel = dataChannel
+        self.dataChannel?.delegate = self
+    }
+}
+
