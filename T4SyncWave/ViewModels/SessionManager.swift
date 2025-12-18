@@ -29,7 +29,7 @@ final class SessionManager: ObservableObject {
         if let token = UserDefaults.standard.string(forKey: tokenKey) {
             // En producción puedes validar token
             self.isLoggedIn = true
-            self.user = User(id: "local", name: "User")
+//            self.user = User(name: "User", email: "user@example.com" , id: "1", token: token)
             print("🔐 Sesión restaurada")
         }
     }

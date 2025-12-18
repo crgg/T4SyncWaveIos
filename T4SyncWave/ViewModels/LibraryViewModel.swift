@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 @MainActor
 final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegate,  WebRTCRoleDelegate {
 
+    let libraryService = LibraryService.shared
    
     // MARK: - Timer (re-sync)
     private var syncTimer: Timer?
@@ -23,29 +24,38 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     let userName: String
     
     private var playbackTimer: Timer?
-
+    
     
 
     private let baseURL = URL(string: "https://t4videocall.t4ever.com")!
     
     // MARK: - Init
-    init(roomId: String = "bulla4", userName : String = "Ramon") {
-        self.roomId = roomId
-        self.userName = userName
-        
-        // Connect signaling
-        WebSocketSignaling.shared.connect(
-            room: roomId,
-            userName: userName
-        )
-        // Load library
-        super.init( )
-        // Load library
-        Task {
-            await loadLibrary()
+    init(roomId: String? , userName : String?) {
+        if let roomId, let userName  {
+            self.roomId = roomId
+            self.userName = userName
+            
+            // Connect signaling
+            WebSocketSignaling.shared.connect(
+                room: roomId,
+                userName: userName
+            )
+            // Load library
+            super.init( )
+            // Load library
+            Task {
+                await loadLibrary()
+            }
+            rtc.playbackDelegate = self
+            rtc.roleDelegate = self
+        } else {
+            self.roomId = "ramon1"
+            self.userName = "ramon2"
+            super.init()
+            Task {
+                await self.loadLibraryList()
+            }
         }
-        rtc.playbackDelegate = self
-        rtc.roleDelegate = self
     }
 
     // MARK: - Library
@@ -60,6 +70,17 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
             print("❌ Error cargando library:", error)
         }
     }
+    
+    func loadLibraryList() async {
+        do {
+            let response = try await libraryService.listTracks()
+            tracks = response.audio
+        } catch {
+            print("error \(error.localizedDescription)")
+        }
+    }
+    
+    
 
     // MARK: - User Actions
 
@@ -67,7 +88,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     func select(_ track: AudioTrack) {
         
         guard isHost else { return }
-        if selectedTrack == track {
+        if selectedTrack?.id == track.id {
             self.togglePlay()
             return
         }
@@ -76,7 +97,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         
         print("🎧 Track seleccionado:", track.title)
         
-        let url = URL(string: track.url)!
+        let url = URL(string: track.file_url)!
         // load te audio
         audio.loadRemote(url: url, title: track.title)
         
@@ -115,14 +136,14 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         
         let state = PlaybackState(
             roomId: roomId,
-            trackUrl: track.url,
+            trackUrl: track.file_url,
             position: audio.currentTime,
             isPlaying: audio.isPlaying,
             timestamp: Int(Date().timeIntervalSince1970)
         )
         
         rtc.sendPlaybackVer(roomId: roomId,
-                            trackUrl: track.url,
+                            trackUrl: track.file_url,
                          position: audio.currentTime,
                          isPlaying: audio.isPlaying )
         rtc.sendData(state)
@@ -134,7 +155,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
 
         print("📥 Playback recibido:", state)
 
-        if selectedTrack?.url != state.trackUrl {
+        if selectedTrack?.file_url != state.trackUrl {
             let url = URL(string: state.trackUrl)!
             audio.loadRemote(url: url, title: "Remote")
         }
@@ -160,7 +181,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         print("⏸ Host pausó para todos")
     }
 
-   
+    
     
     // MARK: - MP3 Picker
     func pickMP3() {
@@ -205,7 +226,8 @@ extension LibraryViewModel: UIDocumentPickerDelegate {
         }
 
         Task {
-            await uploadMP3(fileURL)
+//            await uploadMP3(fileURL)
+            await uploadMP3ToServer(fileURL)
         }
     }
 
@@ -274,7 +296,7 @@ extension LibraryViewModel: UIDocumentPickerDelegate {
 
             self.rtc.sendPlaybackVer(
                 roomId: self.roomId,
-                trackUrl: track.url,
+                trackUrl: track.file_url,
                 position: self.audio.currentTime,
                 isPlaying: self.audio.isPlaying
             )
@@ -284,6 +306,10 @@ extension LibraryViewModel: UIDocumentPickerDelegate {
     func stopBroadcastingPlayback() {
         playbackTimer?.invalidate()
         playbackTimer = nil
+    }
+    func syncTime() -> TimeInterval {
+        print("Syncing time to:  \(audio.currentTime)")
+        return audio.currentTime
     }
  
 }
@@ -325,4 +351,56 @@ extension WebRTCManager {
     }
     
     
+}
+
+
+extension LibraryViewModel {
+    
+    func uploadMP3ToServer(_ fileURL: URL) async {
+        var request = URLRequest(
+            url: baseURL.appendingPathComponent("/api/audio_test/upload")
+        )
+        request.httpMethod = "POST"
+
+        let boundary = UUID().uuidString
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+        guard let token  = KeychainManager.getAuthToken() else {
+            print("no token 370 ")
+            return
+        }
+        
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        var body = Data()
+
+        do {
+            let fileData = try Data(contentsOf: fileURL)
+            
+            body.append("--\(boundary)\r\n")
+            body.append(
+                "Content-Disposition: form-data; name=\"file\"; filename=\"\(fileURL.lastPathComponent)\"\r\n"
+            )
+            body.append("Content-Type: audio/mpeg\r\n\r\n")
+            body.append(fileData)
+            body.append("\r\n--\(boundary)--\r\n")
+            
+            let (_, response) = try await URLSession.shared.upload(
+                for: request,
+                from: body
+            )
+            
+            guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+                print("❌ Upload falló")
+                return
+            }
+            
+            print("✅ MP3 subido")
+            await loadLibraryList()
+        } catch {
+            print("❌ Error leyendo MP3 o subiendo:", error)
+        }
+    }
 }

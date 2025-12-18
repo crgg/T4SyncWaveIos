@@ -69,10 +69,7 @@ struct RoomsView: View {
                 List {
                     ForEach(vm.rooms) { room in
                         NavigationLink(room.name) {
-                            LibraryView(
-                                roomId: room.id,
-                                userName: session.user!.name
-                            )
+                            LibraryView(context: .group(groupId: "", roomId: room.id, userName: session.user!.name))
                         }
                     }
                 }

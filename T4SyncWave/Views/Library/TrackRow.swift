@@ -22,7 +22,7 @@ struct TrackRow: View {
             VStack(alignment: .leading) {
                 Text(track.title)
                     .font(.headline)
-                Text("\(Int(track.duration)) sec")
+                Text("\(Int(track.duration_ms / 1000)) sec")
                     .font(.caption)
                     .foregroundColor(.gray)
             }

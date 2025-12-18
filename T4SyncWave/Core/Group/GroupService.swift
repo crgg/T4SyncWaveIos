@@ -1,0 +1,84 @@
+//
+//  GroupService.swift
+//  T4SyncWave
+//
+//  Created by Ramon Gajardo on 12/17/25.
+//
+
+import Foundation
+
+final class GroupService {
+    static let shared = GroupService()
+    private init() {}
+    
+    
+    private let baseURL = URL(string: "https://t4videocall.t4ever.com")!
+    
+    
+    func list() async throws -> GroupResponse {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/list",
+            requiredAuth: true
+        )
+    }
+    
+    
+//    func create(name: String, description: String?) async throws -> GroupModel {
+//        try await APICore.shared.request(
+//            baseURL: baseURL,
+//            endpoint: "/api/groups/create",
+//            method: "POST",
+//            body: ["name": name, "description": description]
+//        )
+//    }
+    
+    
+    func update(id: String, name: String) async throws -> GroupModel {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/\(id)",
+            method: "PUT",
+            body: ["name": name]
+        )
+    }
+    
+    
+    func delete(id: String) async throws {
+        let _: EmptyResponse = try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/delete",
+            method: "POST",
+            body : ["id" : id]
+        )
+    }
+}
+
+extension GroupService {
+    
+    
+    func create(name: String) async throws -> GroupReponseCreate {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/create",
+            method: "POST",
+            body: ["name": name],
+            requiredAuth: true
+        )
+       
+    }
+
+
+    func addMember(groupId: UUID, email: String) async throws {
+         
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/add-member",
+            method: "POST",
+            body: ["group_id": groupId.uuidString , "email": email]
+        ) as EmptyResponse
+    }
+}
+
+
+struct EmptyResponse: Decodable {}

@@ -16,7 +16,7 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     private var timeObserver: Any?
     private var audioSessionConfigured = false
     
-
+   
     @Published private(set) var isPlaying = false
     @Published private(set) var currentTime: Double = 0
     @Published private(set) var duration: Double = 0
@@ -112,9 +112,12 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         timeObserver = player?.addPeriodicTimeObserver(
             forInterval: CMTime(seconds: 1, preferredTimescale: 600),
             queue: .main
-        ) { [weak self] time in
-            self?.currentTime = time.seconds
-            self?.updateElapsedTime(time.seconds)
+        ) {  time in
+            print("🕒 1 \(time.seconds)")
+            Task { @MainActor in
+                self.currentTime = time.seconds
+                self.updateElapsedTime(time.seconds)
+            }
         }
     }
 
@@ -212,6 +215,7 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         ) { [weak self] time in
             guard let self else { return }
             Task { @MainActor in
+                print("🕒 2 \(time.seconds)")
                 self.currentTime = time.seconds
             }
         }
