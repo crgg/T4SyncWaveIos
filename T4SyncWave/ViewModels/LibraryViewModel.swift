@@ -25,6 +25,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     @Published var status: String = "Idle"
   
     @Published var isPlaying: Bool = false
+    @Published var isUploading: Bool = false
 
     // MARK: - Room / Role
 //    let roomId: String
@@ -249,14 +250,8 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         picker.delegate = self
         picker.allowsMultipleSelection = false
         
-        UIApplication.shared
-            .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?
-            .windows
-            .first?
-            .rootViewController?
-            .present(picker, animated: true)
+        // Usar topViewController para presentar correctamente desde sheets
+        UIApplication.shared.topViewController()?.present(picker, animated: true)
     }
     
     func didReceiveRole(_ role: String) {
@@ -417,6 +412,9 @@ extension WebRTCManager {
 extension LibraryViewModel {
     
     func uploadMP3ToServer(_ fileURL: URL) async {
+        isUploading = true
+        defer { isUploading = false }
+        
         var request = URLRequest(
             url: baseURL.appendingPathComponent("/api/audio_test/upload")
         )
@@ -427,7 +425,7 @@ extension LibraryViewModel {
             "multipart/form-data; boundary=\(boundary)",
             forHTTPHeaderField: "Content-Type"
         )
-        guard let token  = KeychainManager.getAuthToken() else {
+        guard let token = KeychainManager.getAuthToken() else {
             print("no token 370 ")
             return
         }

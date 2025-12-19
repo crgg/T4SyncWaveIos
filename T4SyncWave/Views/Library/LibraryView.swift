@@ -29,53 +29,71 @@ struct LibraryView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            ZStack {
+                VStack(spacing: 0) {
 
-                // 🎧 Mini Now Playing (personal)
-                if let track = vm.selectedTrack {
-                    LibraryMiniPlayer(
-                        track: track,
-                        isPlaying: vm.isPlaying,
-                        onPlayPause: {
-                            vm.togglePlay()
-                        },
-                        onStop: {
-                            vm.stop()
+                    // 🎧 Mini Now Playing (personal)
+                    if let track = vm.selectedTrack {
+                        LibraryMiniPlayer(
+                            track: track,
+                            isPlaying: vm.isPlaying,
+                            onPlayPause: {
+                                vm.togglePlay()
+                            },
+                            onStop: {
+                                vm.stop()
+                            }
+                        )
+                    }
+
+                    List {
+
+                        // 🎵 TRACKS
+                        Section("Tracks") {
+                            ForEach(vm.tracks) { track in
+                                TrackRow(
+                                    track: track,
+                                    isPlaying: vm.selectedTrack?.id == track.id
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    handleSelection(track)
+                                }
+                            }
                         }
-                    )
-                }
 
-                List {
+                        // 👥 SEND TO GROUP (solo en contexto group)
+                        if case .group(let group) = context,
+                           let selected = vm.selectedTrack {
 
-                    // 🎵 TRACKS
-                    Section("Tracks") {
-                        ForEach(vm.tracks) { track in
-                            TrackRow(
-                                track: track,
-                                isPlaying: vm.selectedTrack?.id == track.id
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                handleSelection(track)
+                            Section {
+                                Button {
+                                    sendToGroup(groupId: group.id, track: selected)
+                                } label: {
+                                    Label("Send to Group", systemImage: "paperplane.fill")
+                                }
+                                .buttonStyle(.borderedProminent)
                             }
                         }
                     }
-
-                    // 👥 SEND TO GROUP (solo en contexto group)
-                    if case .group(let group) = context,
-                       let selected = vm.selectedTrack {
-
-                        Section {
-                            Button {
-                                sendToGroup(groupId: group.id, track: selected)
-                            } label: {
-                                Label("Send to Group", systemImage: "paperplane.fill")
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                    }
+                    .listStyle(.insetGrouped)
                 }
-                .listStyle(.insetGrouped)
+                .disabled(vm.isUploading)
+                .blur(radius: vm.isUploading ? 2 : 0)
+                
+                // 📤 Upload Loading Overlay
+                if vm.isUploading {
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                        Text("Uploading music...")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(width: 180, height: 120)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(16)
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -100,6 +118,7 @@ struct LibraryView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .disabled(vm.isUploading)
                 }
             }
         }
