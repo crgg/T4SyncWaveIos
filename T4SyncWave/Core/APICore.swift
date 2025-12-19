@@ -13,12 +13,27 @@ import Foundation
 //    case decodingError(Error)
 //    case serverError(statusCode: Int)
 //}
-enum APIError: Error {
+enum APIError: LocalizedError {
     case invalidURL
     case invalidResponse
     case decodingError(Error)
-    case serverError(statusCode: Int, data: Data?) // Añadimos 'data' al error
+    case serverError(statusCode: Int, message: String)
     case customError(message: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .invalidResponse:
+            return "Invalid server response"
+        case .decodingError(let error):
+            return "Data error: \(error.localizedDescription)"
+        case .serverError(_, let message):
+            return message
+        case .customError(let message):
+            return message
+        }
+    }
 }
 class APICore {
     
@@ -143,48 +158,34 @@ class APICore {
             let errorBody = String(data: data, encoding: .utf8) ?? ""
             print("🔴 ERROR SERVER BODY (\(httpResponse.statusCode)): \(errorBody)")
             
+            // Intentar extraer el mensaje de error del backend
+            let errorMessage = extractErrorMessage(from: data, statusCode: httpResponse.statusCode)
             
             // Manejo específico del 401 (No autorizado)
             if httpResponse.statusCode == 401 {
                 
                 if endpoint.contains("auth/login") || errorBody.contains("Invalid credentials") {
-                    // No lanzamos un APIError.serverError(401)
-                    // En su lugar, lanzamos un error que el ViewModel pueda interpretar como LoginError.
-                    
-                    // Opción 1 (Recomendada): Lanzar un error decodificado
-                    // Intentamos decodificar el cuerpo 401 a un modelo de error (ej: ErrorResponse)
-                    if let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
-                        // Asumiendo que ErrorResponse tiene la propiedad 'msg' o 'message'
-                        throw LoginError.invalidCredentials(message: errorResponse.msg ?? "Unknown error")
-                    }
-                    
-                    // Si la decodificación falla, podemos usar el String.
-                    throw LoginError.invalidCredentials(message: "Invalid credentials")
+                    throw LoginError.invalidCredentials(message: errorMessage)
                 }
                 
-                // Aquí puedes lanzar una notificación para el AppStateManager para cerrar la sesión
-                // ...
                 print("🚨 401 Unauthorized: Sesión Expirada. Disparando notificación de logout.")
-                
                 NotificationCenter.default.post(name: .userSessionExpired, object: nil)
             }
+            
+            // Para 400, intentar decodificar la respuesta (puede tener status: false con msg)
             if httpResponse.statusCode == 400 {
                 do {
-                    
                     if let rawJSON = String(data: data, encoding: .utf8) {
-                        print("🟢 Respuesta Exitosa JSON: \(rawJSON.prefix(300))...")
+                        print("🟢 Respuesta 400 JSON: \(rawJSON.prefix(300))...")
                     }
-                    
                     return try JSONDecoder().decode(T.self, from: data)
                 } catch {
-                    // 5. DEBUG: Muestra el error de decodificación detallado
-                    print("❌ ERROR DE DECODIFICACIÓN the error (JSON a Swift Model): \(error.localizedDescription)")
-                    print("Tipo de Modelo Esperado: \(T.self)")
-                    throw APIError.serverError(statusCode: httpResponse.statusCode, data: data)
+                    print("❌ ERROR DE DECODIFICACIÓN (JSON a Swift Model): \(error.localizedDescription)")
+                    throw APIError.serverError(statusCode: httpResponse.statusCode, message: errorMessage)
                 }
             }
         
-            throw APIError.serverError(statusCode: httpResponse.statusCode, data: data)
+            throw APIError.serverError(statusCode: httpResponse.statusCode, message: errorMessage)
         }
 
         // 4. DECODIFICACIÓN EXITOSA (200-299)
@@ -206,5 +207,40 @@ class APICore {
         guard let statusCode else { return true } // error de red
         return (500...599).contains(statusCode)
     }
- 
+    
+    /// Extrae el mensaje de error del JSON del backend
+    private func extractErrorMessage(from data: Data, statusCode: Int) -> String {
+        // Intentar parsear el JSON una sola vez
+        if let errorResponse = try? JSONDecoder().decode(ErrorMessageResponse.self, from: data) {
+            // Prioridad: msg > message > error
+            if let msg = errorResponse.msg, !msg.isEmpty {
+                return msg
+            }
+            if let message = errorResponse.message, !message.isEmpty {
+                return message
+            }
+            if let error = errorResponse.error, !error.isEmpty {
+                return error
+            }
+        }
+        
+        // Si no se puede parsear, intentar mostrar el raw body
+        if let rawString = String(data: data, encoding: .utf8), !rawString.isEmpty {
+            // Si es un string simple de error
+            if rawString.count < 200 {
+                return rawString
+            }
+        }
+        
+        // Mensaje genérico con código
+        return "Server error (code: \(statusCode))"
+    }
+}
+
+// Modelo flexible para parsear mensajes de error del backend
+private struct ErrorMessageResponse: Decodable {
+    let msg: String?
+    let message: String?
+    let error: String?
+    let status: Bool?
 }

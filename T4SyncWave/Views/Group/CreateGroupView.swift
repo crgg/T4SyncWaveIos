@@ -12,6 +12,7 @@ struct CreateGroupView: View {
     @State private var name = ""
     @State private var isCreating = false
     
+    private let maxNameLength = 50
     
     let onSave: (String) async -> Void
     
@@ -19,7 +20,18 @@ struct CreateGroupView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Group name", text: $name)
+                Section {
+                    TextField("Group name", text: $name)
+                        .onChange(of: name) { _, newValue in
+                            if newValue.count > maxNameLength {
+                                name = String(newValue.prefix(maxNameLength))
+                            }
+                        }
+                } footer: {
+                    Text("\(name.count)/\(maxNameLength) characters")
+                        .font(.caption)
+                        .foregroundColor(name.count >= maxNameLength ? .orange : .secondary)
+                }
             }
             .navigationTitle("New Group")
             .toolbar {
@@ -27,12 +39,12 @@ struct CreateGroupView: View {
                     Button("Create") {
                         Task {
                             isCreating = true
-                            await onSave(name)
+                            await onSave(name.trimmingCharacters(in: .whitespaces))
                             isCreating = false
                             dismiss()
                         }
                     }
-                    .disabled(name.isEmpty || isCreating)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isCreating)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: { dismiss() })

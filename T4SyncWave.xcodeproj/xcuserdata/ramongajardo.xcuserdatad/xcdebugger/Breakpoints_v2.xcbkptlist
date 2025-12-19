@@ -304,7 +304,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "177"
             endingLineNumber = "177"
-            landmarkName = "observeValue(forKeyPath:of:change:context:)"
+            landmarkName = "setupRemoteCommands()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

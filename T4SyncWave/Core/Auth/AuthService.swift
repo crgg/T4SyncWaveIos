@@ -6,20 +6,32 @@
 //
 
 import Foundation
-enum LoginError: Error {
+
+enum LoginError: LocalizedError {
     
     // Este caso se usa cuando el servidor responde con 200 OK,
     // pero el JSON interno dice {"status": false, "msg": "..."}
     case invalidCredentials(message: String)
     
     // Puedes agregar más casos si tu servidor tiene otros errores de negocio
-    // Por ejemplo:
     case userLocked(message: String)
     case missingData(message: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidCredentials(let message):
+            return message
+        case .userLocked(let message):
+            return message
+        case .missingData(let message):
+            return message
+        }
+    }
 }
-struct ErrorResponse : Codable {
-    let status : Bool
-    let msg : String?
+
+struct ErrorResponse: Codable {
+    let status: Bool
+    let msg: String?
 }
     
     // Un error genérico para cualquier otro fallo que no sea de la lista anterior

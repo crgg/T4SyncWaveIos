@@ -12,6 +12,10 @@ struct RegisterView: View {
     @EnvironmentObject var appState: AppStateManager
     @StateObject private var vm = AuthViewModel()
     
+    // Límites de caracteres
+    private let maxNameLength = 50
+    private let maxEmailLength = 100
+    private let maxPasswordLength = 50
     
     var body: some View {
         VStack(spacing: 24) {
@@ -27,16 +31,32 @@ struct RegisterView: View {
             VStack(spacing: 16) {
                 TextField("Name", text: $vm.name)
                     .textFieldStyle(.roundedBorder)
+                    .onChange(of: vm.name) { _, newValue in
+                        if newValue.count > maxNameLength {
+                            vm.name = String(newValue.prefix(maxNameLength))
+                        }
+                    }
                 
                 
                 TextField("Email", text: $vm.email)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
                     .textFieldStyle(.roundedBorder)
+                    .onChange(of: vm.email) { _, newValue in
+                        if newValue.count > maxEmailLength {
+                            vm.email = String(newValue.prefix(maxEmailLength))
+                        }
+                    }
                 
                 
                 SecureField("Password", text: $vm.password)
                     .textFieldStyle(.roundedBorder)
+                    .onChange(of: vm.password) { _, newValue in
+                        if newValue.count > maxPasswordLength {
+                            vm.password = String(newValue.prefix(maxPasswordLength))
+                        }
+                    }
             }
             
             
@@ -44,6 +64,7 @@ struct RegisterView: View {
                 Text(error)
                     .foregroundColor(.red)
                     .font(.caption)
+                    .multilineTextAlignment(.center)
             }
             
             
@@ -58,6 +79,7 @@ struct RegisterView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .disabled(vm.name.isEmpty || vm.email.isEmpty || vm.password.isEmpty || vm.isLoading)
             
             
             Spacer()
