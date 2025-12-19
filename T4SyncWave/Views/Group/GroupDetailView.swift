@@ -90,16 +90,23 @@ struct GroupDetailView: View {
             }
         }
         .navigationTitle(group.name)
-        .sheet(isPresented: $showLibrary) {
-            
+        .sheet(isPresented: $showLibrary, onDismiss: {
+            // Recargar grupo cuando se cierre la biblioteca (por si se añadió canción)
+            Task {
+                await vm.load()
+            }
+        }) {
             LibraryView(
-                context: .group(groupmodel:  group)
+                context: .group(groupmodel: group)
             )
         }
-        .sheet(isPresented: $showAddMember) {
+        .sheet(isPresented: $showAddMember, onDismiss: {
+            // Recargar grupo cuando se cierre (por si se añadió miembro)
+            Task {
+                await vm.load()
+            }
+        }) {
             AddMemberView(groupId: group.id)
-               
-                
         }
     }
 }

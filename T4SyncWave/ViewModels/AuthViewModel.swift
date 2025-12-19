@@ -62,7 +62,7 @@ final class AuthViewModel: ObservableObject {
     }
     
     
-    func register() async {
+    func register(appState: AppStateManager) async {
         guard !name.isEmpty else {
             errorMessage = "Name is required"
             return
@@ -76,6 +76,7 @@ final class AuthViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         
+        errorMessage = nil
         
         do {
             let response = try await service.register(
@@ -83,6 +84,19 @@ final class AuthViewModel: ObservableObject {
                 email: email,
                 password: password
             )
+            
+            // Guardar token (igual que en login)
+            if response.token.isEmpty {
+                errorMessage = "Error from server, code: 4546"
+                return
+            }
+            
+            let resultKeyAuthToken = KeychainManager.saveAuthToken(token: response.token)
+            print("Register - result key token is \(resultKeyAuthToken)")
+            
+            // Ir al Home
+            appState.setLoggedIn(true)
+            
             saveSession(response)
         } catch {
             errorMessage = error.localizedDescription

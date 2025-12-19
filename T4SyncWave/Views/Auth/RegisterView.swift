@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 struct RegisterView: View {
+    @EnvironmentObject var appState: AppStateManager
     @StateObject private var vm = AuthViewModel()
     
     
@@ -47,7 +48,7 @@ struct RegisterView: View {
             
             
             Button {
-                Task { await vm.register() }
+                Task { await vm.register(appState: appState) }
             } label: {
                 if vm.isLoading {
                     ProgressView()

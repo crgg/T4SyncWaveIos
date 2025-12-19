@@ -179,22 +179,26 @@ struct GroupModel: Codable, Identifiable {
     let created_by: String?      // Opcional porque puede ser null
     let created_at: String       // Puedes usar Date si configuras un DateFormatter
     let updated_at: String
-    let created_by_name : String
-    let created_by_avatar_url : String?
-}
-struct member: Codable {
-    let id: String
-    let name: String
-    let role: String
-    let user_id : String
-    let joined_at: String
+    // Estos campos solo vienen en la lista, no en create
+    let created_by_name: String?
+    let created_by_avatar_url: String?
 }
 
 
 struct GroupReponseCreate: Codable {
     let status: Bool
     let group: GroupModel
-    let members: [member]?
+    let member: [MemberCreate]?  // Es "member" no "members" en el JSON
+}
+
+// Estructura para el member en la respuesta de crear grupo
+struct MemberCreate: Codable {
+    let id: String
+    let group_id: String
+    let user_id: String
+    let guest_name: String?
+    let role: String
+    let joined_at: String
 }
 
 //struct GroupMember: Identifiable {

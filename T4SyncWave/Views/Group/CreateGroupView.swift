@@ -10,9 +10,10 @@ import SwiftUI
 struct CreateGroupView: View {
     @Environment(\.dismiss) var dismiss
     @State private var name = ""
+    @State private var isCreating = false
     
     
-    let onSave: (String) -> Void
+    let onSave: (String) async -> Void
     
     
     var body: some View {
@@ -24,22 +25,27 @@ struct CreateGroupView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
-                        onSave(name)
-                        dismiss()
+                        Task {
+                            isCreating = true
+                            await onSave(name)
+                            isCreating = false
+                            dismiss()
+                        }
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(name.isEmpty || isCreating)
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: { dismiss() })
+                        .disabled(isCreating)
                 }
             }
+            .interactiveDismissDisabled(isCreating)
         }
     }
 }
 
 #Preview {
-    CreateGroupView {_ in 
+    CreateGroupView { _ in 
         print("dale dael")
-        
     }
 }

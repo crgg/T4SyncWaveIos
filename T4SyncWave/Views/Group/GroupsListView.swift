@@ -50,10 +50,7 @@ struct GroupsListView: View {
             .task { await vm.load() }
             .sheet(isPresented: $vm.showCreate) {
                 CreateGroupView { name in
-                    Task {
-                        await vm.create(name: name)
-                        vm.showCreate = false
-                    }
+                    await vm.create(name: name)
                 }
             }
         }
