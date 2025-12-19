@@ -57,8 +57,12 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
             return
         }
         
-        player?.currentItem?.removeObserver(self, forKeyPath: "status")
-
+        // Limpiar player anterior ANTES de crear uno nuevo
+        cleanupCurrentPlayer()
+        
+        // Reset estado
+        isReadyToPlay = false
+        currentTime = 0
         
         currentURL = url
         let item = AVPlayerItem(url: url)
@@ -74,6 +78,23 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         
         updateNowPlaying(title: title)
         print("🎧 MP3 remoto cargado")
+    }
+    
+    /// Limpia el player actual y sus observers
+    private func cleanupCurrentPlayer() {
+        // Remover time observer del player ACTUAL (antes de reemplazarlo)
+        if let token = timeObserverToken, let currentPlayer = player {
+            currentPlayer.removeTimeObserver(token)
+            timeObserverToken = nil
+        }
+        
+        // Remover KVO observer del item actual
+        if let currentItem = player?.currentItem {
+            currentItem.removeObserver(self, forKeyPath: "status")
+        }
+        
+        // Pausar y limpiar
+        player?.pause()
     }
 
     // MARK: - Play / Pause
@@ -200,10 +221,11 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     
     private func observePlaybackTime() {
         guard let player = player else { return }
-
-        // Limpia si ya existe
-        if let token = timeObserverToken {
-            player.removeTimeObserver(token)
+        
+        // El token ya debería estar limpio desde cleanupCurrentPlayer()
+        // pero por seguridad verificamos
+        if timeObserverToken != nil {
+            print("⚠️ timeObserverToken no estaba limpio")
             timeObserverToken = nil
         }
 
@@ -215,7 +237,6 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         ) { [weak self] time in
             guard let self else { return }
             Task { @MainActor in
-                print("🕒 2 \(time.seconds)")
                 self.currentTime = time.seconds
             }
         }
