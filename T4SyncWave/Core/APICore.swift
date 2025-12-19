@@ -168,7 +168,21 @@ class APICore {
                 
                 NotificationCenter.default.post(name: .userSessionExpired, object: nil)
             }
-        
+            if httpResponse.statusCode == 400 {
+                do {
+                    
+                    if let rawJSON = String(data: data, encoding: .utf8) {
+                        print("🟢 Respuesta Exitosa JSON: \(rawJSON.prefix(300))...")
+                    }
+                    
+                    return try JSONDecoder().decode(T.self, from: data)
+                } catch {
+                    // 5. DEBUG: Muestra el error de decodificación detallado
+                    print("❌ ERROR DE DECODIFICACIÓN the error (JSON a Swift Model): \(error.localizedDescription)")
+                    print("Tipo de Modelo Esperado: \(T.self)")
+                    throw APIError.serverError(statusCode: httpResponse.statusCode, data: data)
+                }
+            }
         
             throw APIError.serverError(statusCode: httpResponse.statusCode, data: data)
         }

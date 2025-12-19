@@ -3,6 +3,11 @@ import SwiftUI
 import Combine
 import UniformTypeIdentifiers
 
+/**
+      
+ 
+ */
+
 @MainActor
 final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegate,  WebRTCRoleDelegate {
 
@@ -18,10 +23,17 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     @Published var selectedTrack: AudioTrack?
     @Published var isHost: Bool = true
     @Published var status: String = "Idle"
-    
+  
+    @Published var isPlaying: Bool = false
+
     // MARK: - Room / Role
-    let roomId: String
-    let userName: String
+//    let roomId: String
+//    let userName: String
+    
+      var joinSend: JoinSend?
+      var groupModel: GroupDetail?
+    
+    
     
     private var playbackTimer: Timer?
     
@@ -30,32 +42,54 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     private let baseURL = URL(string: "https://t4videocall.t4ever.com")!
     
     // MARK: - Init
-    init(roomId: String? , userName : String?) {
-        if let roomId, let userName  {
-            self.roomId = roomId
-            self.userName = userName
+    init(groupModel: GroupDetail?) {
+        guard let current_user = SessionStore.shared.loadUser() else {
+            
+            fatalError("No user")
+        }
+        if let groupModel  {
+            self.groupModel = groupModel
+            //            self.roomId = roomId
+            //            self.userName = userName
+            /**
+             let type : String = "join"
+             let room : String
+             let userId : String
+             let UserName : String
+             let role : String
+             */
+          
+            
+            self.joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: current_user.role ?? "member" )
+            
             
             // Connect signaling
-            WebSocketSignaling.shared.connect(
-                room: roomId,
-                userName: userName
-            )
+            /**
+                                AQUI SE HACE LA CONNECTION A LA SOCKET LA VAMOS A DESCONECTAR
+             **/
+//            WebSocketSignaling.shared.connect(joinSend: joinSend)
+//            rtc.playbackDelegate = self
+//            rtc.roleDelegate = self
+//           
+            /******************************************************/
+            
             // Load library
-            super.init( )
             // Load library
-            Task {
-                await loadLibrary()
-            }
-            rtc.playbackDelegate = self
-            rtc.roleDelegate = self
-        } else {
-            self.roomId = "ramon1"
-            self.userName = "ramon2"
-            super.init()
-            Task {
-                await self.loadLibraryList()
-            }
+//            Task {
+//                await loadLibrary()
+//            }
+            
         }
+        
+        //        else {
+        //            self.roomId = "ramon1"
+        //            self.userName = "ramon2"
+        //            super.init()
+        super.init( )
+        Task {
+            await self.loadLibraryList()
+        }
+        //        }
     }
 
     // MARK: - Library
@@ -88,25 +122,40 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     func select(_ track: AudioTrack) {
         
         guard isHost else { return }
+        
+        // Si es el mismo track → toggle
         if selectedTrack?.id == track.id {
-            self.togglePlay()
+            togglePlay()
             return
         }
-        
-        selectedTrack = track
         
         print("🎧 Track seleccionado:", track.title)
         
         let url = URL(string: track.file_url)!
-        // load te audio
         audio.loadRemote(url: url, title: track.title)
         
-        // start play
-        audio.play()
+        selectedTrack = track        // 👈 primero
+        isPlaying = true             // 👈 UI inmediata
+        
+        audio.play()                 // 👈 async
         startSyncTimer()
         broadcastPlayback()
+        
+        
        
     }
+    
+    func stop() {
+        audio.pause()
+        isPlaying = false
+        selectedTrack = nil
+        broadcastPlayback()
+    }
+    
+    
+    
+    
+    
     private func startSyncTimer() {
         syncTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
               guard let self,
@@ -120,10 +169,18 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     // MARK: - Play / Pause (HOST)
     func togglePlay() {
         guard isHost else { return }
-        
-        audio.isPlaying ? audio.pause() : audio.play()
+
+        if isPlaying {
+            audio.pause()
+            isPlaying = false
+        } else {
+            audio.play()
+            isPlaying = true
+        }
+
         broadcastPlayback()
     }
+
     func seek(to value: Double) {
         guard isHost else { return }
         
@@ -133,16 +190,16 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
     private func broadcastPlayback() {
         
         guard let track = selectedTrack else { return }
-        
+        guard let groupModel = self.groupModel else { return }
         let state = PlaybackState(
-            roomId: roomId,
+            roomId: groupModel.id,
             trackUrl: track.file_url,
             position: audio.currentTime,
             isPlaying: audio.isPlaying,
             timestamp: Int(Date().timeIntervalSince1970)
         )
         
-        rtc.sendPlaybackVer(roomId: roomId,
+        rtc.sendPlaybackVer(roomId: groupModel.id,
                             trackUrl: track.file_url,
                          position: audio.currentTime,
                          isPlaying: audio.isPlaying )
@@ -293,9 +350,10 @@ extension LibraryViewModel: UIDocumentPickerDelegate {
         playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self = self,
                   let track = self.selectedTrack else { return }
+            guard let groupModel = self.groupModel else { return }
 
             self.rtc.sendPlaybackVer(
-                roomId: self.roomId,
+                roomId: groupModel.id,
                 trackUrl: track.file_url,
                 position: self.audio.currentTime,
                 isPlaying: self.audio.isPlaying
@@ -311,7 +369,9 @@ extension LibraryViewModel: UIDocumentPickerDelegate {
         print("Syncing time to:  \(audio.currentTime)")
         return audio.currentTime
     }
- 
+    func clearSelection() {
+        self.selectedTrack = nil
+    }
 }
  
 extension WebRTCManager {

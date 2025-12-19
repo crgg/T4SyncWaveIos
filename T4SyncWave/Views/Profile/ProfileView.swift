@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var authVM: AuthViewModel
+//    @EnvironmentObject var authVM: AuthViewModel
     @EnvironmentObject var appState: AppStateManager
     
     var body: some View {

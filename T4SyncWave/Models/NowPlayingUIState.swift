@@ -6,3 +6,10 @@
 //
 
 import Foundation
+struct NowPlayingUIState {
+    let trackTitle: String
+    let artist: String?
+    let duration: Double
+    let currentTime: Double
+    let isPlaying: Bool
+}

@@ -58,7 +58,7 @@ struct LoginView: View {
                 
                 
                 Spacer()
-                Text(KeychainManager.getAuthToken() ?? "no token")
+//                Text(KeychainManager.getAuthToken() ?? "no token")
                 
                 NavigationLink("Create Account", destination: RegisterView())
                     .font(.footnote)

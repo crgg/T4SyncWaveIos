@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NowPlayingMiniView: View {
-    let track: Track
+    let track: AudioTrack
     
     
     var body: some View {
@@ -23,6 +23,6 @@ struct NowPlayingMiniView: View {
         .background(.ultraThinMaterial)
     }
 }
-    #Preview {
-        NowPlayingMiniView(track: Track(title: "Porta Voz", artist: "Dale", url: URL(string: "https://www.youtube.com/watch?v=dQw4w9WgXcQ")!))
-    }
+//    #Preview {
+//        NowPlayingMiniView(track: AudioTrack(title: "Porta Voz", artist: "Dale", url: URL(string: "https://www.youtube.com/watch?v=dQw4w9WgXcQ")!))
+//    }

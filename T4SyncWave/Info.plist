@@ -11,5 +11,9 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>T4SyncWave may use the camera for future video features.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>T4SyncWave needs microphone access to play and sync audio with your group.</string>
 </dict>
 </plist>

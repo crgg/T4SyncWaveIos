@@ -8,25 +8,42 @@
 import SwiftUI
 
 struct AddMemberView: View {
+    @EnvironmentObject var vm : GroupDetailViewModel
     @Environment(\.dismiss) var dismiss
+    
+    
     @State private var email = ""
-    let groupId: UUID
+    let groupId: String
     
     
     var body: some View {
-        Form {
-            TextField("User email", text: $email)
-                .keyboardType(.emailAddress)
-        }
-        .navigationTitle("Add Member")
-        .toolbar {
-            Button("Add") {
-                Task {
-                    try? await GroupService.shared.addMember(groupId: groupId, email: email)
-                    dismiss()
+        NavigationStack {
+            Form {
+                TextField("User email", text: $email)
+                    .keyboardType(.emailAddress)
+                if let error = vm.error {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
                 }
+                
             }
-            .disabled(email.isEmpty)
+            .navigationTitle("Add Member")
+            .toolbar {
+                Button("Add") {
+                    Task {
+                        //                    try? await GroupService.shared.addMember(groupId: groupId, email: email)
+                        Task {
+                            let response =  await vm.addMember(groupId: groupId, email: email)
+                            if response {
+                                dismiss()
+                            }
+                        }
+                        
+                    }
+                }
+                .disabled(email.isEmpty)
+            }
         }
     }
 }

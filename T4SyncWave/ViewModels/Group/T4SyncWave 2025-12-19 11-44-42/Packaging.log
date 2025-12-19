@@ -1,0 +1,187 @@
+2025-12-19 17:44:38 +0000  Initial pipeline context: <IDEDistributionProcessingPipelineContext: 0x6e1d77ff0; archive(resolved)="<IDEArchive: 0x600212c80fc0>", distributionTask(resolved)="2", distributionDestination(resolved)="1", distributionMethod(resolved)="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team(resolved)="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	Chain (16, self inclusive):
+	<IDEDistributionProcessingPipelineContext: 0x6e1d77ff0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionProcessingPipelineContext: 0x705a46ec0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x3f92ed160; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x43cd46930; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x17ca9d290; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x43a4fa920; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x439896b50; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x419eb0c30; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x375945e50; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="<IDEProvisioningDisambiguatableBasicTeam: 0x6000091b5800; teamID='7T5KXK2RFT', teamName='TECH4 SOLUTIONS, LLC', teamType='Company', username='ramon@tech4tms.com', isFreeProvisioningTeam='0'>">
+	<IDEDistributionContext: 0x41eccbdc0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="(null)">
+	<IDEDistributionContext: 0x716b869f0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="(null)">
+	<IDEDistributionContext: 0x71219f5f0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="(null)">
+	<IDEDistributionContext: 0x41e1b7090; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="<IDEDistributionMethodiOSAdHoc: 0x60003c61b6a0>", team="(null)">
+	<IDEDistributionContext: 0x3460f0680; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x7162cd3c0; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="(null)", team="(null)">
+	<IDEDistributionContext: 0x73cff2f40; archive = "<IDEArchive: 0x600212c80fc0>", distributionMethod="(null)", team="(null)">
+</IDEDistributionProcessingPipelineContext: 0x6e1d77ff0>
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionCreateDestRootStep
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionCopyItemStep
+2025-12-19 17:44:38 +0000  Running /usr/bin/ditto '-V' '/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app' '/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app'
+2025-12-19 17:44:38 +0000  >>> Copying /Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app 
+2025-12-19 17:44:38 +0000  copying file ./_CodeSignature/CodeResources ... 
+2025-12-19 17:44:38 +0000  4075 bytes for ./_CodeSignature/CodeResources
+2025-12-19 17:44:38 +0000  copying file ./AppIcon60x60@2x.png ... 
+2025-12-19 17:44:38 +0000  20604 bytes for ./AppIcon60x60@2x.png
+2025-12-19 17:44:38 +0000  copying file ./Assets.car ... 
+2025-12-19 17:44:38 +0000  4898296 bytes for ./Assets.car
+2025-12-19 17:44:38 +0000  copying file ./T4SyncWave ... 
+2025-12-19 17:44:38 +0000  754416 bytes for ./T4SyncWave
+2025-12-19 17:44:38 +0000  copying file ./AppIcon76x76@2x~ipad.png ... 
+2025-12-19 17:44:38 +0000  31168 bytes for ./AppIcon76x76@2x~ipad.png
+2025-12-19 17:44:38 +0000  copying file ./demo.mp3 ... 
+2025-12-19 17:44:38 +0000  307453 bytes for ./demo.mp3
+2025-12-19 17:44:38 +0000  copying file ./Frameworks/WebRTC.framework/_CodeSignature/CodeResources ... 
+2025-12-19 17:44:38 +0000  2034 bytes for ./Frameworks/WebRTC.framework/_CodeSignature/CodeResources
+2025-12-19 17:44:38 +0000  copying file ./Frameworks/WebRTC.framework/PrivacyInfo.xcprivacy ... 
+2025-12-19 17:44:38 +0000  757 bytes for ./Frameworks/WebRTC.framework/PrivacyInfo.xcprivacy
+2025-12-19 17:44:38 +0000  copying file ./Frameworks/WebRTC.framework/WebRTC ... 
+2025-12-19 17:44:38 +0000  11630496 bytes for ./Frameworks/WebRTC.framework/WebRTC
+2025-12-19 17:44:38 +0000  copying file ./Frameworks/WebRTC.framework/Info.plist ... 
+2025-12-19 17:44:38 +0000  750 bytes for ./Frameworks/WebRTC.framework/Info.plist
+2025-12-19 17:44:38 +0000  copying file ./embedded.mobileprovision ... 
+2025-12-19 17:44:38 +0000  17207 bytes for ./embedded.mobileprovision
+2025-12-19 17:44:38 +0000  copying file ./Info.plist ... 
+2025-12-19 17:44:38 +0000  1787 bytes for ./Info.plist
+2025-12-19 17:44:38 +0000  copying file ./PkgInfo ... 
+2025-12-19 17:44:38 +0000  8 bytes for ./PkgInfo
+2025-12-19 17:44:38 +0000  /usr/bin/ditto exited with 0
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionEmbedProfileStep
+2025-12-19 17:44:38 +0000  Skipping profile for item: <IDEDistributionItem: 0x60011a0b0060; bundleID='org.webrtc.WebRTC', path='<DVTFilePath:0x600212c403f0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0803c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005bebaf40; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='(null)', teamID='7T5KXK2RFT', identifier='org.webrtc.WebRTC', executablePath='<DVTFilePath:0x60011a0a6880:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC'>', hardenedRuntime='0'>'>
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionInfoPlistStep
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionInfoPlistStep because it said so
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionInfoPlistStep because it said so
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionAppThinningPlistStep
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionAppThinningPlistStep because it said so
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionSymbolsStep
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionAppThinningStep
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionAppThinningStep because it said so
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionArchThinningStep
+2025-12-19 17:44:38 +0000  Archs to thin for item /Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework are []
+2025-12-19 17:44:38 +0000  Archs to thin for item /Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app are []
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionODRStep
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionStripXattrsStep
+2025-12-19 17:44:38 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-12-19 17:44:38 +0000  Skipping stripping extended attributes because the codesign step will strip them.
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionCodesignStep
+2025-12-19 17:44:38 +0000  Entitlements for <IDEDistributionItem: 0x60011a0b0060; bundleID='org.webrtc.WebRTC', path='<DVTFilePath:0x600212c403f0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0803c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005f17c3c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='(null)', teamID='7T5KXK2RFT', identifier='org.webrtc.WebRTC', executablePath='<DVTFilePath:0x60011a0a6880:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC'>', hardenedRuntime='0'>'>: {
+}
+2025-12-19 17:44:38 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-12-19 17:44:38 +0000  Entitlements for <IDEDistributionItem: 0x60011a0b0060; bundleID='org.webrtc.WebRTC', path='<DVTFilePath:0x600212c403f0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0803c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005be0f0c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='(null)', teamID='7T5KXK2RFT', identifier='org.webrtc.WebRTC', executablePath='<DVTFilePath:0x60011a0a6880:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC'>', hardenedRuntime='0'>'> are: {
+}
+2025-12-19 17:44:38 +0000  Writing entitlements for <IDEDistributionItem: 0x60011a0b0060; bundleID='org.webrtc.WebRTC', path='<DVTFilePath:0x600212c403f0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0803c0; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005be0f0c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='(null)', teamID='7T5KXK2RFT', identifier='org.webrtc.WebRTC', executablePath='<DVTFilePath:0x60011a0a6880:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC'>', hardenedRuntime='0'>'> to: /var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/entitlements~~~s2oR4y
+2025-12-19 17:44:38 +0000  invoking codesign: <NSConcreteTask: 0x600126703a20; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C46562B9052929F4F9A436FD207DD5464BCD778C,
+    "--entitlements",
+    "/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/entitlements~~~s2oR4y",
+    "--preserve-metadata=identifier,flags,runtime,launch-constraints,library-constraints",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app/Frameworks/WebRTC.framework"
+)'>
+2025-12-19 17:44:38 +0000  codesign output: /var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app/Frameworks/WebRTC.framework: replacing existing signature
+/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app/Frameworks/WebRTC.framework: signed bundle with Mach-O universal (arm64) [org.webrtc.WebRTC]
+2025-12-19 17:44:38 +0000  Entitlements for <IDEDistributionItem: 0x60011a081b00; bundleID='extraformios.t4app.com.T4SyncWave', path='<DVTFilePath:0x60011a0a7de0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0b2580; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005f17c3c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='{
+    "application-identifier" = "7T5KXK2RFT.extraformios.t4app.com.T4SyncWave";
+    "com.apple.developer.team-identifier" = 7T5KXK2RFT;
+    "get-task-allow" = 1;
+}', teamID='7T5KXK2RFT', identifier='extraformios.t4app.com.T4SyncWave', executablePath='<DVTFilePath:0x60011a084240:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/T4SyncWave'>', hardenedRuntime='0'>'>: {
+    "application-identifier" = "7T5KXK2RFT.extraformios.t4app.com.T4SyncWave";
+    "com.apple.developer.team-identifier" = 7T5KXK2RFT;
+    "get-task-allow" = 0;
+}
+2025-12-19 17:44:38 +0000  Associated App Clip Identifiers Filter: Skipping because "com.apple.developer.associated-appclip-app-identifiers" is not present
+2025-12-19 17:44:38 +0000  Entitlements for <IDEDistributionItem: 0x60011a081b00; bundleID='extraformios.t4app.com.T4SyncWave', path='<DVTFilePath:0x60011a0a7de0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0b2580; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005f17c3c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='{
+    "application-identifier" = "7T5KXK2RFT.extraformios.t4app.com.T4SyncWave";
+    "com.apple.developer.team-identifier" = 7T5KXK2RFT;
+    "get-task-allow" = 1;
+}', teamID='7T5KXK2RFT', identifier='extraformios.t4app.com.T4SyncWave', executablePath='<DVTFilePath:0x60011a084240:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/T4SyncWave'>', hardenedRuntime='0'>'> are: {
+    "application-identifier" = "7T5KXK2RFT.extraformios.t4app.com.T4SyncWave";
+    "com.apple.developer.team-identifier" = 7T5KXK2RFT;
+    "get-task-allow" = 0;
+}
+2025-12-19 17:44:38 +0000  Writing entitlements for <IDEDistributionItem: 0x60011a081b00; bundleID='extraformios.t4app.com.T4SyncWave', path='<DVTFilePath:0x60011a0a7de0:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app'>', codeSigningInfo='<_DVTCodeSigningInformation_Path: 0x60011a0b2580; isSigned='1', isAdHocSigned='0', signingCertificate='<DVTSigningCertificate: 0x60005f17c3c0; name='Apple Development: Ramon Gajardo (3UVYT95Y5S)', hash='46D199052C2B89EEE255DDD12356E39C204CEFB1', serialNumber='17ACECA6875ED6C4E301508B2FD91121', certificateKinds='(
+    "1.2.840.113635.100.6.1.12",
+    "1.2.840.113635.100.6.1.2"
+), issueDate='2025-02-18 16:52:28 +0000''>', entitlements='{
+    "application-identifier" = "7T5KXK2RFT.extraformios.t4app.com.T4SyncWave";
+    "com.apple.developer.team-identifier" = 7T5KXK2RFT;
+    "get-task-allow" = 1;
+}', teamID='7T5KXK2RFT', identifier='extraformios.t4app.com.T4SyncWave', executablePath='<DVTFilePath:0x60011a084240:'/Users/ramongajardo/Library/Developer/Xcode/Archives/2025-12-19/T4SyncWave 12-19-25, 11.40 AM.xcarchive/Products/Applications/T4SyncWave.app/T4SyncWave'>', hardenedRuntime='0'>'> to: /var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/entitlements~~~bi3JQW
+2025-12-19 17:44:38 +0000  invoking codesign: <NSConcreteTask: 0x6001267c3e30; launchPath='/usr/bin/codesign', arguments='(
+    "-f",
+    "-s",
+    C46562B9052929F4F9A436FD207DD5464BCD778C,
+    "--entitlements",
+    "/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/entitlements~~~bi3JQW",
+    "--preserve-metadata=identifier,flags,runtime,launch-constraints,library-constraints",
+    "--generate-entitlement-der",
+    "--strip-disallowed-xattrs",
+    "-vvv",
+    "/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app"
+)'>
+2025-12-19 17:44:38 +0000  codesign output: /var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app: replacing existing signature
+/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app: signed app bundle with Mach-O thin (arm64) [extraformios.t4app.com.T4SyncWave]
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionZipODRItemStep
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-12-19 17:44:38 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2025-12-19 17:44:38 +0000  Processing step: IDEDistributionCreateIPAStep
+2025-12-19 17:44:38 +0000  Running /usr/bin/ditto '-V' '-c' '-k' '--norsrc' '/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root' '/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Packages/T4SyncWave.ipa'
+2025-12-19 17:44:38 +0000  >>> Copying /var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root 
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/_CodeSignature/CodeResources ... 
+2025-12-19 17:44:38 +0000  4075 bytes for ./Payload/T4SyncWave.app/_CodeSignature/CodeResources
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/AppIcon60x60@2x.png ... 
+2025-12-19 17:44:38 +0000  20604 bytes for ./Payload/T4SyncWave.app/AppIcon60x60@2x.png
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/Assets.car ... 
+2025-12-19 17:44:38 +0000  4898296 bytes for ./Payload/T4SyncWave.app/Assets.car
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/T4SyncWave ... 
+2025-12-19 17:44:38 +0000  754416 bytes for ./Payload/T4SyncWave.app/T4SyncWave
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/AppIcon76x76@2x~ipad.png ... 
+2025-12-19 17:44:38 +0000  31168 bytes for ./Payload/T4SyncWave.app/AppIcon76x76@2x~ipad.png
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/demo.mp3 ... 
+2025-12-19 17:44:38 +0000  307453 bytes for ./Payload/T4SyncWave.app/demo.mp3
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/_CodeSignature/CodeResources ... 
+2025-12-19 17:44:38 +0000  2034 bytes for ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/_CodeSignature/CodeResources
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/PrivacyInfo.xcprivacy ... 
+2025-12-19 17:44:38 +0000  757 bytes for ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/PrivacyInfo.xcprivacy
+2025-12-19 17:44:38 +0000  copying file ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC ... 
+2025-12-19 17:44:39 +0000  11630512 bytes for ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/WebRTC
+2025-12-19 17:44:39 +0000  copying file ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/Info.plist ... 
+750 bytes for ./Payload/T4SyncWave.app/Frameworks/WebRTC.framework/Info.plist
+copying file ./Payload/T4SyncWave.app/embedded.mobileprovision ... 
+2025-12-19 17:44:39 +0000  19524 bytes for ./Payload/T4SyncWave.app/embedded.mobileprovision
+2025-12-19 17:44:39 +0000  copying file ./Payload/T4SyncWave.app/Info.plist ... 
+1787 bytes for ./Payload/T4SyncWave.app/Info.plist
+copying file ./Payload/T4SyncWave.app/PkgInfo ... 
+2025-12-19 17:44:39 +0000  8 bytes for ./Payload/T4SyncWave.app/PkgInfo
+2025-12-19 17:44:39 +0000  /usr/bin/ditto exited with 0
+2025-12-19 17:44:39 +0000  Processing step: IDEDistributionAppStoreInformationStep
+2025-12-19 17:44:39 +0000  Skipping step: IDEDistributionAppStoreInformationStep because it said so
+2025-12-19 17:44:39 +0000  Processing step: IDEDistributionGenerateProcessedDistributionItems
+2025-12-19 17:44:39 +0000  IDEDistributionItem init <DVTFilePath:0x600212c3ca10:'/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app/Frameworks/WebRTC.framework'>
+2025-12-19 17:44:39 +0000  IDEDistributionItem init <DVTFilePath:0x60011a09b000:'/var/folders/xz/2m9pfqds0jv89dsyxsm45x6h0000gn/T/XcodeDistPipeline.~~~LrPcIT/Root/Payload/T4SyncWave.app'>
+2025-12-19 17:44:39 +0000  Processing step: IDEDistributionCreateManifestStep

@@ -43,10 +43,10 @@ final class PlayerViewModel: ObservableObject,
         rtc.roleDelegate = self
 
         // 1️⃣ Conectar signaling
-        WebSocketSignaling.shared.connect(
-            room: roomId,
-            userName: userName
-        )
+//        WebSocketSignaling.shared.connect(
+//            room: roomId,
+//            userName: userName
+//        )
         //
         if isHost {
             let url = URL(string:

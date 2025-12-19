@@ -22,6 +22,13 @@ final class GroupService {
             requiredAuth: true
         )
     }
+    func listToListener() async throws -> GroupResponse {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/groups-listens",
+            requiredAuth: true
+        )
+    }
     
     
 //    func create(name: String, description: String?) async throws -> GroupModel {
@@ -69,16 +76,28 @@ extension GroupService {
     }
 
 
-    func addMember(groupId: UUID, email: String) async throws {
-         
+    func addMember(request: AddMemberRequest) async throws  -> AddMemberResponse {
         try await APICore.shared.request(
             baseURL: baseURL,
             endpoint: "/api/groups/add-member",
             method: "POST",
-            body: ["group_id": groupId.uuidString , "email": email]
-        ) as EmptyResponse
+            body: request,
+            requiredAuth: true
+        )
     }
 }
 
 
 struct EmptyResponse: Decodable {}
+
+extension GroupService {
+    func getGroup(id: String) async throws -> GroupResponseDetail {
+        try await APICore.shared.request(
+            baseURL: URL(string: "https://t4videocall.t4ever.com")!,
+            endpoint: "/api/groups/get/\(id)",
+            requiredAuth: true
+        )
+        
+       
+    }
+}

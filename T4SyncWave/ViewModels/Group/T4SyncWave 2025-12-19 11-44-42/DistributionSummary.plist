@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>T4SyncWave.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>C46562B9052929F4F9A436FD207DD5464BCD778C</string>
+				<key>dateExpires</key>
+				<string>4/3/26</string>
+				<key>type</key>
+				<string>Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1.0</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>C46562B9052929F4F9A436FD207DD5464BCD778C</string>
+						<key>dateExpires</key>
+						<string>4/3/26</string>
+						<key>type</key>
+						<string>Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>WebRTC.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>7T5KXK2RFT</string>
+						<key>name</key>
+						<string>TECH4 SOLUTIONS, LLC</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>1.0</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>7T5KXK2RFT.extraformios.t4app.com.T4SyncWave</string>
+				<key>com.apple.developer.team-identifier</key>
+				<string>7T5KXK2RFT</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>T4SyncWave.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>89fd41a7-5346-46ac-a677-aace5707ad66</string>
+				<key>dateExpires</key>
+				<string>7/8/26</string>
+				<key>name</key>
+				<string>iOS Team Ad Hoc Provisioning Profile: extraformios.t4app.com.T4SyncWave</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>7T5KXK2RFT</string>
+				<key>name</key>
+				<string>TECH4 SOLUTIONS, LLC</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.1</string>
+		</dict>
+	</array>
+</dict>
+</plist>

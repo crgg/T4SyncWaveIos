@@ -8,11 +8,41 @@
 import SwiftUI
 
 struct MemberRow: View {
+
+    let member: GroupMember
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack(spacing: 12) {
+
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 28))
+                .foregroundColor(member.role == .dj ? .blue : .gray)
+
+            VStack(alignment: .leading) {
+                Text(member.name)
+                    .font(.body)
+                Text(member.email)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if member.role == .dj {
+                Text("DJ")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(Color.blue.opacity(0.15)))
+                    .foregroundColor(.blue)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 
-#Preview {
-    MemberRow()
-}
+
+
+//#Preview {
+//    MemberRow()
+//}

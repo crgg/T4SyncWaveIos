@@ -15,17 +15,17 @@ import Foundation
 struct AudioResponse : Codable {
     let status: Bool
     let audio: [AudioTrack]
-    let group : [GroupModel]?
 }
 
 struct AudioTrack: Codable, Identifiable {
     let id: String
-    let group_id: String?
     let title: String
     let artist: String
     let file_url: String
     let duration_ms: Int
-    let position: Int
+    let group_id: String?
     let added_by: String? // Opcional por si acaso el usuario es nulo
     let created_at: String
+    let group : [GroupModel]?
+//    let position: Int
 }

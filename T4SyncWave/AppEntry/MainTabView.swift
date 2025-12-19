@@ -11,9 +11,9 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             HomeView()
-            LibraryView(context: .personal)        
-            ProfileView()
-            
+            ListenerView()
+            LibraryView(context: .personal)
+            ProfileView()            
         }
     }
 }

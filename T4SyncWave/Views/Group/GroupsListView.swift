@@ -22,7 +22,7 @@ struct GroupsListView: View {
                     List {
                         ForEach(vm.groups ) { group in
                             NavigationLink(group.name) {
-                                GroupDetailView(group: group)
+                                GroupDetailView(groupId: group.id.uuidString)
                             }
                         }
                         .onDelete { indexSet in

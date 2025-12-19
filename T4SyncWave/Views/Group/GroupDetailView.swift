@@ -8,26 +8,99 @@
 import SwiftUI
 
 struct GroupDetailView: View {
-    let group: GroupModel
+
+    @StateObject private var vm: GroupDetailViewModel
+    @State private var showLibrary = false
+    @State private var showAddMember = false
+    private var isListener  = false
     
-    
+
+    init(groupId: String, listener: Bool = false) {
+           _vm = StateObject(wrappedValue: GroupDetailViewModel(groupId: groupId, isListener: listener ))
+        isListener = listener
+    }
+
     var body: some View {
+        Group {
+            if vm.isLoading {
+                ProgressView("Loading group...")
+            } else if let group = vm.group {
+                content(group)
+                    .environmentObject(vm)
+            } else {
+                Text("Failed to load group")
+            }
+        }
+        .task {
+            // load the group
+            await vm.load()
+        }
+    }
+    
+    private func content(_ group: GroupDetail) -> some View {
         List {
-            Section("Info") {
-                Label(group.code, systemImage: "qrcode")
-                Label(group.is_playing ? "Playing" : "Stopped", systemImage: "play.circle")
+            
+            // 🎧 NOW PLAYING
+            Section {
+                NowPlayingCard(
+                    state: vm.nowPlayingState,
+                    currentTime: vm.localCurrentTime,
+                    duration: vm.duration,
+                    isSeekEnabled: !vm.isListener,
+                    onAddMusic: { showLibrary = true },
+                    onPlayPause: {
+                        vm.togglePlayPause()
+                    },
+                    onSeek: { seconds in
+                        vm.seek(to: seconds)
+                    },
+                    onBackward: {
+                        vm.skipBackward()
+                    },
+                    onForward: {
+                        vm.skipForward()
+                    }
+                )
+            }
+            .listRowSeparator(.hidden)
+            
+            // 👥 MEMBERS
+            Section(header: Text("Members (\(group.members.count))")) {
+                ForEach(group.members) { member in
+                    MemberRow(member: member)
+                }
+                if !isListener {
+                    Button {
+                        showAddMember = true
+                    } label: {
+                        Label("Add member", systemImage: "plus")
+                    }
+                }
             }
             
-            
-            Section {
-                NavigationLink("Add member") {
-                    AddMemberView(groupId: group.id)
+            // ℹ️ INFO
+            Section("Group Info") {
+                HStack {
+                    Text("Code")
+                    Spacer()
+                    Text(group.code)
+//                        .font(.monospaced())
+                        .foregroundColor(.secondary)
                 }
             }
         }
         .navigationTitle(group.name)
+        .sheet(isPresented: $showLibrary) {
+            
+            LibraryView(
+                context: .group(groupmodel:  group)
+            )
+        }
+        .sheet(isPresented: $showAddMember) {
+            AddMemberView(groupId: group.id)
+               
+                
+        }
     }
 }
-#Preview {
-//    GroupDetailView(group: GroupModel(id: U"90174548-e4e1-4eee-8046-67bc454e4492", name: "Ramodkj", code:  "CED3", is_active: true, current_track_id: nil, current_time_ms: 0, is_playing: false, created_by: nil, created_at: "2025-12-17T03:49:41.648Z", updated_at: "2025-12-17T03:49:41.648Z"))
-}
+

@@ -14,12 +14,13 @@ final class GroupTrackService {
     
     private let baseURL = URL(string: "https://t4videocall.t4ever.com")!
     
-    func addTrack(id: String, name: String) async throws -> GroupModel {
+    func addTrack(groupID: String, trackID: String) async throws -> AddTrackResponse {
         try await APICore.shared.request(
             baseURL: baseURL,
-            endpoint: "/api/groups/\(id)",
-            method: "PUT",
-            body: ["name": name],
+            endpoint: "/api/audio_test/add-track-to-group",
+            method: "POST",
+            body: ["groupId": groupID,
+                  "trackId" : trackID],
             requiredAuth: true
         )
     }

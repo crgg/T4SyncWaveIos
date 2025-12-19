@@ -8,7 +8,22 @@
 import Foundation
 import Combine
 
-final class WebSocketSignaling: NSObject, ObservableObject {
+struct JoinSend {
+    let type : String
+    let room : String
+    let userId : String
+    let UserName : String
+    let role : String
+}
+
+enum WebSocketConnectionState {
+    case disconnected
+    case connecting
+    case connected
+    case reconnecting
+}
+
+final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketDelegate {
 
     static let shared = WebSocketSignaling()
 
@@ -16,32 +31,99 @@ final class WebSocketSignaling: NSObject, ObservableObject {
     private let url = URL(string: "wss://t4videocall.t4ever.com/sfu-video/ws")!
 
     private var socket: URLSessionWebSocketTask?
-    private let session = URLSession(configuration: .default)
+    private var session: URLSession!
+    
+    // Estado de conexión
+    @Published private(set) var connectionState: WebSocketConnectionState = .disconnected
+    
+    // Para reconexión
+    private var lastJoinSend: JoinSend?
+    private var reconnectAttempts = 0
+    private let maxReconnectAttempts = 5
+    private var reconnectTimer: Timer?
+    private var pingTimer: Timer?
 
     override init() {
         super.init()
+        // Crear session con delegate para detectar desconexiones
+        session = URLSession(configuration: .default, delegate: self, delegateQueue: .main)
     }
 
-    func connect(room: String, userName: String) {
+    func connect(joinSend: JoinSend) {
+        // Guardar para reconexión
+        lastJoinSend = joinSend
+        reconnectAttempts = 0
+        
+        performConnect(joinSend: joinSend)
+    }
+    
+    private func performConnect(joinSend: JoinSend) {
+        // Cancelar conexión anterior si existe
+        disconnect()
+        
+        connectionState = .connecting
+        print("🔌 WebSocket conectando...")
+        
         socket = session.webSocketTask(with: url)
         socket?.resume()
-
+        
         send([
-            "type": "join",
-            "room": room,
-            "userName": userName
+            "type": joinSend.type,
+            "room": joinSend.room,
+            "userId": joinSend.userId,
+            "userName": joinSend.UserName,
+            "role": joinSend.role
         ])
 
         listen()
+        startPingTimer()
+        
+        connectionState = .connected
+        print("✅ WebSocket conectado")
+    }
+    
+    /// Reconectar usando la última configuración
+    func reconnect(joinSend: JoinSend? = nil) {
+        let sendData = joinSend ?? lastJoinSend
+        
+        guard let sendData else {
+            print("⚠️ No hay datos de conexión para reconectar")
+            return
+        }
+        
+        // Actualizar lastJoinSend si se proporciona uno nuevo
+        if joinSend != nil {
+            lastJoinSend = joinSend
+        }
+        
+        connectionState = .reconnecting
+        print("🔄 Reconectando WebSocket (intento \(reconnectAttempts + 1)/\(maxReconnectAttempts))...")
+        
+        performConnect(joinSend: sendData)
+    }
+    
+    /// Desconectar y limpiar
+    func disconnect() {
+        stopPingTimer()
+        stopReconnectTimer()
+        socket?.cancel(with: .goingAway, reason: nil)
+        socket = nil
+        connectionState = .disconnected
+    }
+    
+    /// Verificar si está conectado
+    var isConnected: Bool {
+        connectionState == .connected
     }
 
     func send(_ dict: [String: Any]) {
         guard let data = try? JSONSerialization.data(withJSONObject: dict),
               let text = String(data: data, encoding: .utf8) else { return }
 
-        socket?.send(.string(text)) { error in
+        socket?.send(.string(text)) { [weak self] error in
             if let error = error {
                 print("❌ WS send error:", error)
+                self?.handleConnectionError()
             }
         }
     }
@@ -54,6 +136,7 @@ final class WebSocketSignaling: NSObject, ObservableObject {
                 self?.listen()
             case .failure(let error):
                 print("❌ WS receive error:", error)
+                self?.handleConnectionError()
             }
         }
     }
@@ -61,13 +144,94 @@ final class WebSocketSignaling: NSObject, ObservableObject {
     private func handle(_ message: URLSessionWebSocketTask.Message) {
         guard case .string(let text) = message else { return }
 
-           print("📩 WS recibido:", text)
+        print("📩 WS recibido:", text)
 
-           guard
-               let data = text.data(using: .utf8),
-               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-           else { return }
-           print("📩send to webrtc")
-           WebRTCManager.shared.handleSignaling(json)
+        guard
+            let data = text.data(using: .utf8),
+            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return }
+        
+        // Reset reconnect attempts on successful message
+        reconnectAttempts = 0
+        
+        print("📩 send to webrtc")
+        WebRTCManager.shared.handleSignaling(json)
+    }
+    
+    // MARK: - Connection Error Handling
+    
+    private func handleConnectionError() {
+        guard connectionState != .reconnecting else { return }
+        
+        connectionState = .disconnected
+        scheduleReconnect()
+    }
+    
+    private func scheduleReconnect() {
+        guard reconnectAttempts < maxReconnectAttempts else {
+            print("❌ Máximo de intentos de reconexión alcanzado")
+            return
+        }
+        
+        stopReconnectTimer()
+        
+        // Backoff exponencial: 1s, 2s, 4s, 8s, 16s
+        let delay = pow(2.0, Double(reconnectAttempts))
+        reconnectAttempts += 1
+        
+        print("⏰ Reconexión programada en \(delay) segundos...")
+        
+        reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
+            self?.reconnect()
+        }
+    }
+    
+    private func stopReconnectTimer() {
+        reconnectTimer?.invalidate()
+        reconnectTimer = nil
+    }
+    
+    // MARK: - Ping/Pong para mantener conexión viva
+    
+    private func startPingTimer() {
+        stopPingTimer()
+        
+        pingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            self?.sendPing()
+        }
+    }
+    
+    private func stopPingTimer() {
+        pingTimer?.invalidate()
+        pingTimer = nil
+    }
+    
+    private func sendPing() {
+        socket?.sendPing { [weak self] error in
+            if let error = error {
+                print("❌ Ping failed:", error)
+                self?.handleConnectionError()
+            } else {
+                print("🏓 Ping OK")
+            }
+        }
+    }
+    
+    // MARK: - URLSessionWebSocketDelegate
+    
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        print("✅ WebSocket didOpen")
+        DispatchQueue.main.async {
+            self.connectionState = .connected
+            self.reconnectAttempts = 0
+        }
+    }
+    
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        print("🔴 WebSocket didClose: \(closeCode)")
+        DispatchQueue.main.async {
+            self.connectionState = .disconnected
+            self.scheduleReconnect()
+        }
     }
 }

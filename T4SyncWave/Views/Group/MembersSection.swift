@@ -8,11 +8,29 @@
 import SwiftUI
 
 struct MembersSection: View {
+
+    let members: [GroupMember]
+    let onAddMember: () -> Void
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Section(
+            header: Text("Members (\(members.count))")
+        ) {
+            ForEach(members) { member in
+                MemberRow(member: member)
+            }
+
+            Button {
+                onAddMember()
+            } label: {
+                Label("Add member", systemImage: "plus")
+                    .foregroundColor(.blue)
+            }
+        }
     }
 }
 
-#Preview {
-    MembersSection()
-}
+
+//#Preview {
+//    MembersSection()
+//}

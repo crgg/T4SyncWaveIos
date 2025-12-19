@@ -2,101 +2,147 @@ import SwiftUI
 
 enum LibraryContext {
     case personal
-    case group(groupId: String, roomId: String, userName: String)
+    case group(groupmodel : GroupDetail)
 }
 
-
-
-
 struct LibraryView: View {
-    
+    @Environment(\.dismiss) var dismiss
     let context: LibraryContext
-    
-//    let groupId: String?
-    @StateObject private var vm : LibraryViewModel
-    
+    @StateObject private var vm: LibraryViewModel
+
     init(context: LibraryContext) {
         self.context = context
-        
+
         switch context {
         case .personal:
             _vm = StateObject(
-                wrappedValue: LibraryViewModel(
-                    roomId: nil,
-                    userName: nil
-                )
+                wrappedValue: LibraryViewModel( groupModel: nil)
+                    
             )
-            
-        case .group(let roomId, _, let userName):
+
+        case .group(let groupmodel):
             _vm = StateObject(
-                wrappedValue: LibraryViewModel(
-                    roomId: roomId,
-                    userName: userName
-                )
+                wrappedValue: LibraryViewModel(groupModel: groupmodel)
             )
         }
     }
 
-    
-//    init(groupId: String?, roomId : String , userName: String) {
-//        self.groupId = groupId
-//        _vm = StateObject(wrappedValue: LibraryViewModel(roomId: roomId, userName: userName))
-//    }
- 
     var body: some View {
         NavigationStack {
-            if let track = vm.selectedTrack {
-                
-            }
-            Slider(
-                value: Binding(
-                    get: { vm.syncTime() },
-                    set: {
-                        vm.audio.seek(to: $0)
-//                        vm.broadcastState()
-                    }
-                ),
-                in: 0...vm.audio.duration
-            )
-            List {
-                ForEach(vm.tracks) { track in
-                    HStack {
-                        Image(systemName: "music.note")
-                        Text(track.title)
-                        Spacer()
-                        if vm.selectedTrack?.id == track.id {
-                            Image(systemName: "speaker.wave.2.fill")
+            VStack(spacing: 0) {
+
+                // 🎧 Mini Now Playing (personal)
+                if let track = vm.selectedTrack {
+                    LibraryMiniPlayer(
+                        track: track,
+                        isPlaying: vm.isPlaying,
+                        onPlayPause: {
+                            vm.togglePlay()
+                        },
+                        onStop: {
+                            vm.stop()
+                        }
+                    )
+                }
+
+                List {
+
+                    // 🎵 TRACKS
+                    Section("Tracks") {
+                        ForEach(vm.tracks) { track in
+                            TrackRow(
+                                track: track,
+                                isPlaying: vm.selectedTrack?.id == track.id
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                handleSelection(track)
+                            }
                         }
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        vm.select(track)
+
+                    // 👥 SEND TO GROUP (solo en contexto group)
+                    if case .group(let group) = context,
+                       let selected = vm.selectedTrack {
+
+                        Section {
+                            Button {
+                                sendToGroup(groupId: group.id, track: selected)
+                            } label: {
+                                Label("Send to Group", systemImage: "paperplane.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+
+                // 📌 Title + subtitle
+                ToolbarItem(placement: .principal) {
+                    VStack {
+                        Text("Library")
+                            .font(.headline)
+                        if case .group = context {
+                            Text("Send music to group")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+
+                // ➕ Upload MP3
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        vm.pickMP3()
+                    } label: {
+                        Image(systemName: "plus")
                     }
                 }
             }
-            .navigationTitle("Library")
-            .toolbar {
-                Button {
-                    vm.pickMP3()
-                } label: {
-                    Image(systemName: "plus")
-                }
-            }
-        } .tabItem {
+        }
+        .tabItem {
             Label("Library", systemImage: "music.note.list")
         }
     }
-    // 🎯 Aquí está la magia
+
+    // 🎧 Tap = escuchar (SIEMPRE)
     private func handleSelection(_ track: AudioTrack) {
-        vm.select(track)
-        
-        if case .group(let groupId, _, _) = context {
-//            Task {
-//                try? await GroupTrackService.shared.addTrack(id: groupId, name: String)
-//                
-//                ( groupId: groupId,  trackId: track.id )
-//            }
+        if case .group(let group) = context {
+          
+            Task {
+//                try? await GroupTrackService.shared.addTrack(
+//                    groupID: group.id,
+//                    trackID: track.id
+//                )
+                
+                Task {
+                    let response = try  await GroupTrackService.shared.addTrack(groupID: group.id, trackID: track.id )
+                    if response.status {
+                        dismiss()
+                    }
+                }
+            }
+            
+        } else {
+            
+            vm.select(track)
         }
+        
     }
+
+    // 👥 Acción explícita = enviar al grupo
+    private func sendToGroup(groupId: String, track: AudioTrack) {
+//        Task {
+//            try? await GroupTrackService.shared.addTrack(
+//                groupId: groupId,
+//                trackId: track.id
+//            )
+//        }
+    }
+    
+  
 }
 

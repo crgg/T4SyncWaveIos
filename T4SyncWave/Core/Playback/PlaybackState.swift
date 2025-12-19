@@ -25,12 +25,7 @@ struct PlaybackState: Codable {
  {"type":"playback-state","room":"bulla","userName":"ramon7","position":11.00008998,"isPlaying":true,"timestamp":1765992768}
  📩 WS recibido: {"type":"playback-state","room":"bulla","userName":"ramon8","position":23.000098025,"isPlaying":true,"timestamp":1765993272,"trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/42d9bfdf-7bd7-484b-8e43-f42c84ff1308.mp3"}
 
- isPlaying: true,
-video-sfu-video  |   timestamp: 1765992590,
-video-sfu-video  |   type: 'playback-state',
-video-sfu-video  |   room: 'bulla',
-video-sfu-video  |   position: 109.00021896,
-video-sfu-video  |   trackUrl: 'https://go2storage.s3.us-east-2.amazonaws.com/audio/42d9bfdf-7bd7-484b-8e43-f42c84**/
+ {"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766115629}*/
 struct PlaybackMessage: Codable {
     let type: String
     let room: String
