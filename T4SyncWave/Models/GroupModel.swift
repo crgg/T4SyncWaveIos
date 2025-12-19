@@ -191,6 +191,13 @@ struct GroupReponseCreate: Codable {
     let member: [MemberCreate]?  // Es "member" no "members" en el JSON
 }
 
+// Response for joining a group by code
+struct JoinGroupResponse: Codable {
+    let status: Bool
+    let msg: String?
+    let group: GroupModel?
+}
+
 // Estructura para el member en la respuesta de crear grupo
 struct MemberCreate: Codable {
     let id: String

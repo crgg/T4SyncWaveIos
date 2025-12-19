@@ -10,7 +10,6 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     
     
     private var timeObserverToken: Any?
-//    @Published var currentTime_2: TimeInterval = 0
 
     private var player: AVPlayer?
     private var timeObserver: Any?
@@ -21,15 +20,52 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     @Published private(set) var currentTime: Double = 0
     @Published private(set) var duration: Double = 0
     @Published private(set) var isReadyToPlay: Bool = false
+    @Published var isRepeatEnabled: Bool = false  // 🔁 Modo repetir
     public var currentURL: URL?
     
     private var shouldAutoPlay = false
 
 
     override init() {
-        super.init( )
+        super.init()
         configureAudioSessionOnce()
         setupRemoteCommands()
+        setupEndOfPlaybackObserver()
+    }
+    
+    // MARK: - End of Playback Observer
+    private func setupEndOfPlaybackObserver() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(playerDidFinishPlaying),
+            name: .AVPlayerItemDidPlayToEndTime,
+            object: nil
+        )
+    }
+    
+    @objc private func playerDidFinishPlaying() {
+        Task { @MainActor in
+            print("🏁 Música terminada")
+            
+            if isRepeatEnabled {
+                // Repetir: reiniciar y seguir reproduciendo
+                print("🔁 Repitiendo...")
+                seek(to: 0)
+                currentTime = 0
+                player?.play()
+            } else {
+                // No repetir: pausar y quedarse al final
+                isPlaying = false
+                updatePlaybackRate(0.0)
+                // Notificar que terminó
+                NotificationCenter.default.post(name: .audioDidFinishPlaying, object: nil)
+            }
+        }
+    }
+    
+    func toggleRepeat() {
+        isRepeatEnabled.toggle()
+        print("🔁 Repeat: \(isRepeatEnabled ? "ON" : "OFF")")
     }
 
     // MARK: - Audio Session (UNA VEZ)
@@ -109,6 +145,13 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         if !isReadyToPlay {
             print("⏳ play() solicitado, esperando readyToPlay")
             return
+        }
+        
+        // Si la música terminó (currentTime >= duration - 0.5), reiniciar al principio
+        if duration > 0 && currentTime >= duration - 0.5 {
+            print("🔄 Música terminada, reiniciando al principio")
+            seek(to: 0)
+            currentTime = 0
         }
         
         // 🔥 SOLO si ya está listo

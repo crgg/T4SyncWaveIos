@@ -47,6 +47,7 @@ struct GroupDetailView: View {
                     currentTime: vm.localCurrentTime,
                     duration: vm.duration,
                     isSeekEnabled: !vm.isListener,
+                    isRepeatEnabled: vm.audio.isRepeatEnabled,
                     onAddMusic: { showLibrary = true },
                     onPlayPause: {
                         vm.togglePlayPause()
@@ -59,8 +60,13 @@ struct GroupDetailView: View {
                     },
                     onForward: {
                         vm.skipForward()
+                    },
+                    onToggleRepeat: {
+                        vm.audio.toggleRepeat()
                     }
                 )
+                .listRowInsets(EdgeInsets()) // Sin márgenes de celda
+                .listRowBackground(Color.clear)
             }
             .listRowSeparator(.hidden)
             

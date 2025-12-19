@@ -39,7 +39,7 @@ struct GroupsListView: View {
                     }
                 }
             }
-            .navigationTitle("Groups")
+            .navigationTitle("My Groups")
             .toolbar {
                 Button {
                     vm.showCreate = true

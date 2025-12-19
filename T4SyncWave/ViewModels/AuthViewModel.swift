@@ -39,10 +39,12 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         
         do {
+            // Normalizar email a minúsculas
+            let normalizedEmail = email.lowercased().trimmingCharacters(in: .whitespaces)
             
             let device_token = KeychainManager.getDeviceToken()
             print("device token is \(device_token ?? "")")
-            let credentials = LoginRequest(email: email, password: password, token_device: device_token ?? "")
+            let credentials = LoginRequest(email: normalizedEmail, password: password, token_device: device_token ?? "")
             
             let response = try await service.login(credential: credentials)
             
@@ -79,9 +81,12 @@ final class AuthViewModel: ObservableObject {
         errorMessage = nil
         
         do {
+            // Normalizar email a minúsculas
+            let normalizedEmail = email.lowercased().trimmingCharacters(in: .whitespaces)
+            
             let response = try await service.register(
-                name: name,
-                email: email,
+                name: name.trimmingCharacters(in: .whitespaces),
+                email: normalizedEmail,
                 password: password
             )
             

@@ -14,11 +14,13 @@ struct NowPlayingCard: View {
     let currentTime: Double
     let duration: Double
     let isSeekEnabled: Bool
+    let isRepeatEnabled: Bool
     let onAddMusic: () -> Void
     let onPlayPause: () -> Void
     let onSeek: (Double) -> Void
     var onBackward: (() -> Void)? = nil
     var onForward: (() -> Void)? = nil
+    var onToggleRepeat: (() -> Void)? = nil
     
     // Helper para formatear tiempo mm:ss
     private func formatTime(_ seconds: Double) -> String {
@@ -69,6 +71,8 @@ struct NowPlayingCard: View {
             .buttonStyle(.borderedProminent)
             .padding(.top, 8)
         }
+        .frame(maxWidth: .infinity) // ← Centrar horizontalmente
+        .padding(.vertical, 20)
     }
     private func playingView(_ state: NowPlayingUIState) -> some View {
         VStack(spacing: 12) {
@@ -109,7 +113,21 @@ struct NowPlayingCard: View {
                     .monospacedDigit()
             }
             
-            HStack(spacing: 40) {
+            HStack(spacing: 32) {
+                // 🔁 Botón Repetir
+                Button(action: {
+                    onToggleRepeat?()
+                }) {
+                    Image(systemName: isRepeatEnabled ? "repeat.1" : "repeat")
+                        .font(.system(size: 20))
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(isRepeatEnabled ? .accentColor : .primary)
+                .disabled(!isSeekEnabled)
+                .opacity(isSeekEnabled ? 1 : 0.4)
+                
                 Button(action: {
                     onBackward?()
                 }) {
@@ -145,6 +163,10 @@ struct NowPlayingCard: View {
                 .buttonStyle(.plain)
                 .disabled(!isSeekEnabled)
                 .opacity(isSeekEnabled ? 1 : 0.4)
+                
+                // Spacer para balance visual
+                Color.clear
+                    .frame(width: 36, height: 36)
             }
             .foregroundColor(.primary)
         }

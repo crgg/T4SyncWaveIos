@@ -37,11 +37,17 @@ struct LibraryView: View {
                         LibraryMiniPlayer(
                             track: track,
                             isPlaying: vm.isPlaying,
+                            currentTime: vm.localCurrentTime,
+                            duration: vm.duration,
+                            isRepeatEnabled: vm.audio.isRepeatEnabled,
                             onPlayPause: {
                                 vm.togglePlay()
                             },
                             onStop: {
                                 vm.stop()
+                            },
+                            onToggleRepeat: {
+                                vm.audio.toggleRepeat()
                             }
                         )
                     }

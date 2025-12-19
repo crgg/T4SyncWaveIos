@@ -330,6 +330,13 @@ extension GroupDetailViewModel {
         if isPlaying {
             pause(track)
         } else {
+            // Si la música terminó, reiniciar al principio
+            if duration > 0 && localCurrentTime >= duration - 0.5 {
+                print("🔄 Música terminada, reiniciando al principio")
+                localCurrentTime = 0
+                group?.currentTimeMs = 0
+                audio.seek(to: 0)
+            }
             startPlaying(track)
         }
     }

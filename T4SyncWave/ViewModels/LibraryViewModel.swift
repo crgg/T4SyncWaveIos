@@ -26,6 +26,11 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
   
     @Published var isPlaying: Bool = false
     @Published var isUploading: Bool = false
+    
+    // MARK: - Playback Time
+    @Published var localCurrentTime: Double = 0
+    @Published var duration: Double = 0
+    private var uiTimer: Timer?
 
     // MARK: - Room / Role
 //    let roomId: String
@@ -86,11 +91,28 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         //            self.roomId = "ramon1"
         //            self.userName = "ramon2"
         //            super.init()
-        super.init( )
+        super.init()
+        
+        // Observar cuando la música termina
+        setupAudioEndObserver()
+        
         Task {
             await self.loadLibraryList()
         }
         //        }
+    }
+    
+    private func setupAudioEndObserver() {
+        NotificationCenter.default.addObserver(
+            forName: .audioDidFinishPlaying,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in
+                self?.isPlaying = false
+                self?.stopUITimer()
+            }
+        }
     }
 
     // MARK: - Library
@@ -137,19 +159,21 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         
         selectedTrack = track        // 👈 primero
         isPlaying = true             // 👈 UI inmediata
+        duration = Double(track.duration_ms) / 1000  // 👈 actualizar duración
+        localCurrentTime = 0         // 👈 reset tiempo
         
         audio.play()                 // 👈 async
         startSyncTimer()
+        startUITimer()               // 👈 iniciar timer UI
         broadcastPlayback()
-        
-        
-       
     }
     
     func stop() {
         audio.pause()
         isPlaying = false
         selectedTrack = nil
+        localCurrentTime = 0
+        stopUITimer()
         broadcastPlayback()
     }
     
@@ -167,6 +191,29 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
               self.broadcastPlayback()
           }
     }
+    
+    // MARK: - UI Timer (actualizar segundos)
+    private func startUITimer() {
+        stopUITimer()
+        
+        let timer = Timer(timeInterval: 0.4, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self,
+                      self.audio.isReadyToPlay,
+                      self.audio.isPlaying else { return }
+                
+                self.localCurrentTime = self.audio.currentTime
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        uiTimer = timer
+    }
+    
+    private func stopUITimer() {
+        uiTimer?.invalidate()
+        uiTimer = nil
+    }
+    
     // MARK: - Play / Pause (HOST)
     func togglePlay() {
         guard isHost else { return }
@@ -174,9 +221,17 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         if isPlaying {
             audio.pause()
             isPlaying = false
+            stopUITimer()
         } else {
+            // Si la música terminó, reiniciar al principio
+            if duration > 0 && localCurrentTime >= duration - 0.5 {
+                print("🔄 Música terminada, reiniciando al principio")
+                localCurrentTime = 0
+                audio.seek(to: 0)
+            }
             audio.play()
             isPlaying = true
+            startUITimer()
         }
 
         broadcastPlayback()

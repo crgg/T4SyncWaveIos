@@ -85,6 +85,17 @@ extension GroupService {
             requiredAuth: true
         )
     }
+    
+    /// Join a group using 6-character code
+    func joinByCode(_ code: String) async throws -> JoinGroupResponse {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/groups/join",
+            method: "POST",
+            body: ["code": code],
+            requiredAuth: true
+        )
+    }
 }
 
 

@@ -47,7 +47,4 @@ final class GroupsViewModel: ObservableObject {
         try? await GroupService.shared.delete(id: id.uuidString)
         groups.removeAll { $0.id == id }
     }
-    
-  
-  
 }

@@ -13,9 +13,9 @@ struct EmptyGroupsView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "music.note.list")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
+            Image(systemName: "shareplay")
+                .font(.system(size: 60))
+                .foregroundColor(.accentColor)
             
             
             Text("No Groups Yet")
@@ -23,19 +23,25 @@ struct EmptyGroupsView: View {
             
             
             Text("Create your first DJ group and start syncing music")
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal)
             
-            
-            Button("Create Group", action: onCreate)
-                .buttonStyle(.borderedProminent)
+            Button {
+                onCreate()
+            } label: {
+                Label("Create Group", systemImage: "plus.circle")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.horizontal, 40)
         }
         .padding()
     }
 }
 #Preview {
     EmptyGroupsView {
-        print("El usuario quiere crear un grupo: Acción simulada con éxito")
+        print("Create")
     }
 }

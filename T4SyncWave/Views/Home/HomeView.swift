@@ -11,7 +11,8 @@ struct HomeView: View {
     var body: some View {
         GroupsListView()
             .tabItem {
-                Label("Mi Groups", systemImage: "person.3.fill")
+                // shareplay = sync listening icon
+                Label("My Groups", systemImage: "shareplay")
             }
     }
 }
