@@ -21,14 +21,27 @@ struct GroupDetailView: View {
     }
 
     var body: some View {
-        Group {
-            if vm.isLoading {
-                ProgressView("Loading group...")
-            } else if let group = vm.group {
-                content(group)
-                    .environmentObject(vm)
-            } else {
-                Text("Failed to load group")
+        ZStack {
+            Group {
+                if vm.isLoading {
+                    ProgressView("Loading group...")
+                } else if let group = vm.group {
+                    content(group)
+                        .environmentObject(vm)
+                } else {
+                    Text("Failed to load group")
+                }
+            }
+            
+            // Toast overlay
+            if let toast = vm.toastMessage {
+                VStack {
+                    Spacer()
+                    ToastView(message: toast)
+                        .padding(.bottom, 100)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .animation(.spring(), value: vm.toastMessage)
             }
         }
         .task {
@@ -48,6 +61,7 @@ struct GroupDetailView: View {
                     duration: vm.duration,
                     isSeekEnabled: !vm.isListener,
                     isRepeatEnabled: vm.audio.isRepeatEnabled,
+                    isListener: vm.isListener, // Listener can't add music
                     onAddMusic: { showLibrary = true },
                     onPlayPause: {
                         vm.togglePlayPause()
@@ -70,16 +84,29 @@ struct GroupDetailView: View {
             }
             .listRowSeparator(.hidden)
             
-            // 👥 MEMBERS
-            Section(header: Text("Members (\(group.members.count))")) {
-                ForEach(group.members) { member in
-                    MemberRow(member: member)
+            // 🎧 DJ Section
+            if let dj = vm.djMember {
+                Section(header: Text("DJ")) {
+                    DJRow(
+                        member: dj,
+                        isOnline: vm.onlineMembers.contains(dj.id)
+                    )
+                }
+            }
+            
+            // 👥 LISTENERS
+            Section(header: listenersHeader) {
+                ForEach(vm.listenerMembers) { member in
+                    MemberRow(
+                        member: member,
+                        isOnline: vm.onlineMembers.contains(member.id)
+                    )
                 }
                 if !isListener {
                     Button {
                         showAddMember = true
                     } label: {
-                        Label("Add member", systemImage: "plus")
+                        Label("Invite listener", systemImage: "plus")
                     }
                 }
             }
@@ -114,6 +141,106 @@ struct GroupDetailView: View {
         }) {
             AddMemberView(groupId: group.id)
         }
+    }
+    
+    /// Header for listeners section
+    private var listenersHeader: some View {
+        HStack {
+            Text("Listeners (\(vm.listenerMembers.count))")
+            Spacer()
+            if vm.onlineMembers.count > 0 {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(Color.green)
+                        .frame(width: 8, height: 8)
+                    Text("\(vm.onlineMembers.count) online")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - DJ Row (Special styling for DJ)
+struct DJRow: View {
+    let member: GroupMember
+    var isOnline: Bool = false
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Avatar with crown and online indicator
+            ZStack(alignment: .bottomTrailing) {
+                ZStack(alignment: .top) {
+                    Image(systemName: "person.circle.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.blue)
+                    
+                    // Crown for DJ
+                    Image(systemName: "crown.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.yellow)
+                        .offset(y: -6)
+                }
+                
+                // Online status
+                Circle()
+                    .fill(isOnline ? Color.green : Color.gray.opacity(0.5))
+                    .frame(width: 12, height: 12)
+                    .overlay(
+                        Circle()
+                            .stroke(Color(UIColor.systemBackground), lineWidth: 2)
+                    )
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 6) {
+                    Text(member.name)
+                        .font(.body.bold())
+                    
+                    if isOnline {
+                        Text("playing")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                    }
+                }
+                Text(member.email)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Text("DJ")
+                .font(.caption.bold())
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Capsule().fill(Color.blue))
+                .foregroundColor(.white)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Toast View
+struct ToastView: View {
+    let message: String
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "person.fill.checkmark")
+                .foregroundColor(.white)
+            Text(message)
+                .font(.subheadline.weight(.medium))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            Capsule()
+                .fill(Color.black.opacity(0.8))
+        )
+        .shadow(radius: 10)
     }
 }
 

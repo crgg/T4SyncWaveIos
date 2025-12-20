@@ -10,7 +10,7 @@ import Combine
 import UIKit
 
 @MainActor
-final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate,  WebRTCRoleDelegate  {
+final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebRTCRoleDelegate, WebRTCMemberPresenceDelegate {
 
     
     @Published var group: GroupDetail?
@@ -18,6 +18,15 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate,  Web
     @Published var error: String?
     @Published var isPlaying: Bool = false
     @Published var selectedTrack: GroupTrack?
+    
+    // Track online members by their userId
+    @Published var onlineMembers: Set<String> = []
+    
+    // Toast message when someone joins
+    @Published var toastMessage: String?
+    
+    // Current user ID
+    let currentUserId: String
         
     let audio = AudioPlayerManager.shared
     let rtc = WebRTCManager.shared
@@ -38,8 +47,10 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate,  Web
     init(groupId: String, isListener: Bool = false) {
         self.groupId = groupId
         self.isListener = isListener
+        self.currentUserId = SessionStore.shared.loadUser()?.id ?? ""
         rtc.playbackDelegate = self
         rtc.roleDelegate = self
+        rtc.presenceDelegate = self
         
         // Observar cuando la app vuelve a primer plano
         setupAppLifecycleObservers()
@@ -269,6 +280,61 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate,  Web
     
     func didReceiveRole(_ role: String) {
         print("👑 Rol asignado:", role)
+    }
+    
+    // MARK: - WebRTCMemberPresenceDelegate
+    
+    func didMemberJoin(userId: String, userName: String, room: String) {
+        guard room == groupId else { return }
+        guard userId != currentUserId else { return } // Don't notify about myself
+        
+        print("✅ Miembro conectado: \(userName) (\(userId))")
+        onlineMembers.insert(userId)
+        
+        // Show toast
+        showToast("\(userName) joined")
+    }
+    
+    func didMemberLeave(userId: String, userName: String, room: String) {
+        guard room == groupId else { return }
+        guard userId != currentUserId else { return }
+        
+        print("❌ Miembro desconectado: \(userName) (\(userId))")
+        onlineMembers.remove(userId)
+        
+        // Show toast
+        showToast("\(userName) left")
+    }
+    
+    /// Show a toast message that auto-dismisses
+    private func showToast(_ message: String) {
+        toastMessage = message
+        
+        // Auto dismiss after 3 seconds
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if toastMessage == message {
+                toastMessage = nil
+            }
+        }
+    }
+    
+    /// Check if a member is online by their member ID or user ID
+    func isMemberOnline(_ memberId: String) -> Bool {
+        onlineMembers.contains(memberId)
+    }
+    
+    /// Get DJ member from group
+    var djMember: GroupMember? {
+        group?.members.first { $0.role == .dj }
+    }
+    
+    /// Get listeners (excluding DJ and current user)
+    var listenerMembers: [GroupMember] {
+        guard let members = group?.members else { return [] }
+        return members.filter { member in
+            member.role != .dj && member.id != currentUserId
+        }
     }
     func seek(to seconds: Double) {
 

@@ -16,8 +16,13 @@ protocol WebRTCPlaybackDelegate: AnyObject {
 protocol WebRTCRoleDelegate: AnyObject {
     func didReceiveRole(_ role: String)
 }
+protocol WebRTCMemberPresenceDelegate: AnyObject {
+    func didMemberJoin(userId: String, userName: String, room: String)
+    func didMemberLeave(userId: String, userName: String, room: String)
+}
 final class WebRTCManager: NSObject, ObservableObject {
     weak var roleDelegate: WebRTCRoleDelegate?
+    weak var presenceDelegate: WebRTCMemberPresenceDelegate?
     
     static let shared = WebRTCManager()
     weak var playbackDelegate: WebRTCPlaybackDelegate?
@@ -130,6 +135,26 @@ final class WebRTCManager: NSObject, ObservableObject {
                         self.roleDelegate?.didReceiveRole(role)
                     }
                 }
+            
+        case "joined":
+            // Un usuario se unió a la sala
+            let userId = msg["userId"] as? String ?? ""
+            let userName = msg["userName"] as? String ?? ""
+            let room = msg["room"] as? String ?? ""
+            print("👤 Usuario conectado: \(userName) en sala \(room)")
+            DispatchQueue.main.async {
+                self.presenceDelegate?.didMemberJoin(userId: userId, userName: userName, room: room)
+            }
+            
+        case "left":
+            // Un usuario dejó la sala
+            let userId = msg["userId"] as? String ?? ""
+            let userName = msg["userName"] as? String ?? ""
+            let room = msg["room"] as? String ?? ""
+            print("👋 Usuario desconectado: \(userName) de sala \(room)")
+            DispatchQueue.main.async {
+                self.presenceDelegate?.didMemberLeave(userId: userId, userName: userName, room: room)
+            }
 
         default:
             break

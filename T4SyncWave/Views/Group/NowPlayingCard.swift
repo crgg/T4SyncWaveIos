@@ -15,6 +15,7 @@ struct NowPlayingCard: View {
     let duration: Double
     let isSeekEnabled: Bool
     let isRepeatEnabled: Bool
+    var isListener: Bool = false // Listener mode - can't add music
     let onAddMusic: () -> Void
     let onPlayPause: () -> Void
     let onSeek: (Double) -> Void
@@ -51,25 +52,45 @@ struct NowPlayingCard: View {
     
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Image(systemName: "music.note")
-                .font(.system(size: 42))
-                .foregroundColor(.secondary)
+            if isListener {
+                // Listener waiting for DJ
+                Image(systemName: "waveform")
+                    .font(.system(size: 42))
+                    .foregroundColor(.secondary)
+                    .symbolEffect(.pulse)
 
-            Text("No music playing")
-                .font(.headline)
+                Text("Waiting for DJ...")
+                    .font(.headline)
 
-            Text("Choose a track to start listening together")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+                Text("The DJ will start playing music soon")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
+                ProgressView()
+                    .padding(.top, 8)
+            } else {
+                // DJ can add music
+                Image(systemName: "music.note")
+                    .font(.system(size: 42))
+                    .foregroundColor(.secondary)
 
-            Button {
-                onAddMusic()
-            } label: {
-                Label("Add Music", systemImage: "music.note.plus")
+                Text("No music playing")
+                    .font(.headline)
+
+                Text("Choose a track to start listening together")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                Button {
+                    onAddMusic()
+                } label: {
+                    Label("Add Music", systemImage: "music.note.plus")
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 8)
             }
-            .buttonStyle(.borderedProminent)
-            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity) // ← Centrar horizontalmente
         .padding(.vertical, 20)

@@ -10,7 +10,7 @@ import SwiftUI
 struct MemberRow: View {
 
     let member: GroupMember
-    var isOnline: Bool = false // Will be updated when backend sends presence events
+    var isOnline: Bool = false // Updated when backend sends presence events
 
     var body: some View {
         HStack(spacing: 12) {
@@ -19,7 +19,7 @@ struct MemberRow: View {
             ZStack(alignment: .bottomTrailing) {
                 Image(systemName: "person.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundColor(member.role == .dj ? .blue : .gray)
+                    .foregroundColor(.gray)
                 
                 // Online status indicator
                 Circle()
@@ -48,15 +48,10 @@ struct MemberRow: View {
             }
 
             Spacer()
-
-            if member.role == .dj {
-                Text("DJ")
-                    .font(.caption.bold())
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Capsule().fill(Color.blue.opacity(0.15)))
-                    .foregroundColor(.blue)
-            }
+            
+            // Headphones icon for listeners
+            Image(systemName: "headphones")
+                .foregroundColor(.secondary)
         }
         .padding(.vertical, 4)
     }

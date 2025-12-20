@@ -1,0 +1,394 @@
+# Backend SFU - Servidor de Señalización WebSocket
+
+## Descripción
+
+Servidor de señalización WebSocket para comunicación en tiempo real. Aunque se llama "SFU" (Selective Forwarding Unit), actualmente funciona como un servidor de señalización que reenvía mensajes WebRTC (offer/answer/ice-candidate) entre clientes que están en la misma sala.
+
+## Configuración
+
+| Variable de Entorno | Descripción | Valor por Defecto |
+|---------------------|-------------|-------------------|
+| `PORT` | Puerto del servidor | `4000` |
+
+## Endpoints HTTP
+
+### Health Check
+
+```
+GET /health
+```
+
+**Respuesta:**
+```json
+{
+  "ok": true,
+  "component": "sfu-signaling",
+  "time": "2025-01-01T00:00:00.000Z"
+}
+```
+
+---
+
+## Conexión WebSocket
+
+### URL de Conexión
+
+```
+ws://localhost:4000
+```
+
+> **Nota:** Nginx puede reescribir `/sfu/ws` a `/ws`. El servidor acepta conexiones en cualquier path.
+
+---
+
+## Mensajes WebSocket
+
+Todos los mensajes deben enviarse en formato JSON.
+
+### 1. `join` - Unirse a una sala
+
+El cliente envía este mensaje para unirse a una sala. El primer usuario en unirse se convierte en **host**.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "join",
+  "room": "room-id-123",
+  "userName": "Juan"
+}
+```
+
+**Servidor → Cliente (confirmación de rol):**
+```json
+{
+  "type": "role",
+  "role": "host"  // o "listener"
+}
+```
+
+**Servidor → Otros clientes (notificación):**
+```json
+{
+  "type": "joined",
+  "room": "room-id-123",
+  "userName": "Juan"
+}
+```
+
+---
+
+### 2. `offer` - Enviar oferta WebRTC
+
+Reenvía una oferta SDP a todos los clientes de la sala.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "offer",
+  "room": "room-id-123",
+  "sdp": { ... }
+}
+```
+
+---
+
+### 3. `answer` - Enviar respuesta WebRTC
+
+Reenvía una respuesta SDP a todos los clientes de la sala.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "answer",
+  "room": "room-id-123",
+  "sdp": { ... }
+}
+```
+
+---
+
+### 4. `ice-candidate` - Enviar candidato ICE
+
+Reenvía un candidato ICE a todos los clientes de la sala.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "ice-candidate",
+  "room": "room-id-123",
+  "candidate": { ... }
+}
+```
+
+---
+
+### 5. `user-video-state` - Estado del video del usuario
+
+Notifica a todos los clientes cuando un usuario activa/desactiva su video.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "user-video-state",
+  "userName": "Juan",
+  "videoEnable": true
+}
+```
+
+**Servidor → Todos los clientes:**
+```json
+{
+  "type": "user-video-state",
+  "room": "room-id-123",
+  "userName": "Juan",
+  "videoEnable": true
+}
+```
+
+---
+
+### 6. `user-audio-state` - Estado del audio del usuario
+
+Notifica a todos los clientes cuando un usuario activa/desactiva su audio.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "user-audio-state",
+  "userName": "Juan",
+  "audioEnable": true
+}
+```
+
+**Servidor → Todos los clientes:**
+```json
+{
+  "type": "user-audio-state",
+  "room": "room-id-123",
+  "userName": "Juan",
+  "audioEnable": true
+}
+```
+
+---
+
+### 7. `call-start` - Iniciar llamada
+
+Notifica a todos los clientes que se ha iniciado una llamada.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "call-start",
+  "userName": "Juan"
+}
+```
+
+**Servidor → Todos los clientes:**
+```json
+{
+  "type": "call-start",
+  "room": "room-id-123",
+  "userName": "Juan"
+}
+```
+
+---
+
+### 8. `playback-state` - Estado de reproducción (Solo Host)
+
+Sincroniza el estado de reproducción de audio/video entre todos los listeners. **Solo el host puede enviar este mensaje.**
+
+**Cliente (Host) → Servidor:**
+```json
+{
+  "type": "playback-state",
+  "position": 45.5,
+  "isPlaying": true,
+  "timestamp": 1704067200000,
+  "truckUrl": "https://example.com/audio.mp3"
+}
+```
+
+**Servidor → Listeners:**
+```json
+{
+  "type": "playback-state",
+  "room": "room-id-123",
+  "userName": "HostUser",
+  "position": 45.5,
+  "isPlaying": true,
+  "timestamp": 1704067200000,
+  "truckUrl": "https://example.com/audio.mp3"
+}
+```
+
+> ⚠️ Si un cliente que no es host envía este mensaje, será ignorado.
+
+---
+
+### 9. `request-host` - Solicitar ser Host
+
+Permite a un cliente solicitar convertirse en el host de la sala.
+
+**Cliente → Servidor:**
+```json
+{
+  "type": "request-host"
+}
+```
+
+**Servidor → Cliente:**
+```json
+{
+  "type": "role",
+  "role": "host"
+}
+```
+
+---
+
+## Sistema de Roles
+
+| Rol | Descripción |
+|-----|-------------|
+| `host` | Primer usuario en unirse a la sala. Puede controlar la reproducción. |
+| `listener` | Usuarios que se unen después del host. Reciben el estado de reproducción. |
+
+---
+
+## Estructura de Datos Interna
+
+### Sala (Room)
+
+```javascript
+{
+  clients: Set<WebSocket>,  // Conjunto de conexiones WebSocket
+  host: WebSocket           // Referencia al socket del host
+}
+```
+
+### Propiedades del WebSocket
+
+Cada conexión WebSocket tiene las siguientes propiedades adicionales:
+
+| Propiedad | Tipo | Descripción |
+|-----------|------|-------------|
+| `roomId` | `string` | ID de la sala a la que pertenece |
+| `userName` | `string` | Nombre del usuario |
+| `isHost` | `boolean` | Si es el host de la sala |
+
+---
+
+## Flujo de Conexión Típico
+
+```
+┌─────────┐                    ┌─────────┐                    ┌─────────┐
+│ Cliente │                    │   SFU   │                    │ Otros   │
+│  (Host) │                    │ Server  │                    │Clientes │
+└────┬────┘                    └────┬────┘                    └────┬────┘
+     │                              │                              │
+     │──── join (room, userName) ──>│                              │
+     │                              │                              │
+     │<─── role: "host" ────────────│                              │
+     │                              │                              │
+     │                              │<──── join (room, userName) ──│
+     │                              │                              │
+     │<─── joined (userName) ───────│───── role: "listener" ──────>│
+     │                              │                              │
+     │──── offer (sdp) ────────────>│───── offer (sdp) ───────────>│
+     │                              │                              │
+     │<─── answer (sdp) ────────────│<──── answer (sdp) ───────────│
+     │                              │                              │
+     │──── ice-candidate ──────────>│───── ice-candidate ─────────>│
+     │<─── ice-candidate ───────────│<──── ice-candidate ──────────│
+     │                              │                              │
+     │──── playback-state ─────────>│───── playback-state ────────>│
+     │                              │                              │
+```
+
+---
+
+## Eventos de Desconexión
+
+Cuando un cliente se desconecta:
+
+1. Se elimina del conjunto de clientes de la sala
+2. Si la sala queda vacía, se elimina completamente
+3. *(Comentado)* Si el host se desconecta, se podría reasignar automáticamente
+
+---
+
+## Ejemplo de Uso (Cliente JavaScript)
+
+```javascript
+const ws = new WebSocket('ws://localhost:4000');
+
+ws.onopen = () => {
+  // Unirse a una sala
+  ws.send(JSON.stringify({
+    type: 'join',
+    room: 'mi-sala-123',
+    userName: 'Juan'
+  }));
+};
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  
+  switch (msg.type) {
+    case 'role':
+      console.log('Mi rol:', msg.role);
+      break;
+    case 'joined':
+      console.log(`${msg.userName} se unió a la sala`);
+      break;
+    case 'offer':
+      // Manejar oferta WebRTC
+      break;
+    case 'answer':
+      // Manejar respuesta WebRTC
+      break;
+    case 'ice-candidate':
+      // Agregar candidato ICE
+      break;
+    case 'playback-state':
+      // Sincronizar reproducción
+      break;
+  }
+};
+
+// Enviar estado de reproducción (solo si eres host)
+ws.send(JSON.stringify({
+  type: 'playback-state',
+  position: 30.5,
+  isPlaying: true,
+  timestamp: Date.now(),
+  truckUrl: 'https://example.com/track.mp3'
+}));
+```
+
+---
+
+## Ejecución
+
+```bash
+# Desarrollo
+npm start
+
+# Con variable de entorno personalizada
+PORT=5000 npm start
+
+# Docker
+docker build -t t4call-sfu .
+docker run -p 4000:4000 t4call-sfu
+```
+
+---
+
+## Notas Técnicas
+
+- **No es un SFU real**: Este servidor solo reenvía mensajes de señalización. El streaming de media se hace peer-to-peer mediante WebRTC.
+- **Escalabilidad**: Para múltiples instancias, considerar usar Redis para compartir estado entre servidores.
+- **Seguridad**: Considerar agregar autenticación JWT para validar conexiones WebSocket.
+
