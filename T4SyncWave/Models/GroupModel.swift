@@ -195,6 +195,7 @@ struct GroupReponseCreate: Codable {
 struct JoinGroupResponse: Codable {
     let status: Bool
     let msg: String?
+    let member: MemberCreate?
     let group: GroupModel?
 }
 

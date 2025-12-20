@@ -51,18 +51,18 @@ struct ListenerView: View {
         }
     }
     
-    private func joinGroup(code: String) async -> Bool {
+    private func joinGroup(code: String) async -> (Bool, String?) {
         do {
             let response = try await GroupService.shared.joinByCode(code)
             if response.status, let group = response.group {
                 if !vm.groups.contains(where: { $0.id == group.id }) {
                     vm.groups.insert(group, at: 0)
                 }
-                return true
+                return (true, nil)
             }
-            return false
+            return (false, response.msg ?? "Unable to join group")
         } catch {
-            return false
+            return (false, error.localizedDescription)
         }
     }
 }

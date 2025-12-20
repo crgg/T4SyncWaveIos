@@ -14,7 +14,8 @@ struct JoinGroupView: View {
     @State private var isJoining = false
     @State private var errorMessage: String?
     
-    let onJoin: (String) async -> Bool // Returns true if successful
+    /// Returns (success, errorMessage?)
+    let onJoin: (String) async -> (Bool, String?)
     
     var body: some View {
         NavigationStack {
@@ -102,9 +103,11 @@ struct JoinGroupView: View {
         isJoining = true
         defer { isJoining = false }
         
-        let success = await onJoin(code)
+        let (success, error) = await onJoin(code)
         if success {
             dismiss()
+        } else {
+            errorMessage = error ?? "Unable to join group"
         }
     }
 }
@@ -112,7 +115,7 @@ struct JoinGroupView: View {
 #Preview {
     JoinGroupView { code in
         try? await Task.sleep(nanoseconds: 1_000_000_000)
-        return true
+        return (true, nil)
     }
 }
 
