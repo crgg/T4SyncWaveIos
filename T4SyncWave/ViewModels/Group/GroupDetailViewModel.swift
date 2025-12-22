@@ -288,13 +288,6 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             }
         }
 
-        // Detectar si el DJ reinició la música desde el principio
-        let isRestartFromBeginning = audio.currentTime > 10.0 && state.position < 2.0 && state.isPlaying
-        if isRestartFromBeginning {
-            print("🔄 DJ reinició la música desde el principio")
-            // Forzar sincronización inmediata cuando el DJ reinicia
-        }
-
         // Sincronizar posición con lógica mejorada
         let diff = abs(audio.currentTime - state.position)
         let duration = audio.duration
@@ -303,6 +296,12 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 
         // Detectar reinicio desde el principio
         let isRestartFromBeginning = audio.currentTime > 5.0 && state.position < 2.0 && state.isPlaying
+        let isJumpToBeginning = state.position < 1.0 && state.isPlaying
+
+        if isRestartFromBeginning {
+            print("🔄 DJ reinició la música desde el principio")
+            // Forzar sincronización inmediata cuando el DJ reinicia
+        }
         let isJumpToBeginning = state.position < 1.0 && state.isPlaying
 
         // No sincronizar si ambos están cerca del final (música terminando)
