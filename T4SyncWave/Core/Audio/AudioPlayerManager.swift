@@ -105,13 +105,14 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         player = AVPlayer(playerItem: item)
         
         observePlaybackTime()
+        observeDuration(item: item)  // 👈 Agregar observación de duración
         item.addObserver(
             self,
             forKeyPath: "status",
             options: [.new, .initial],
             context: nil
         )
-        
+
         updateNowPlaying(title: title)
         print("🎧 MP3 remoto cargado")
     }

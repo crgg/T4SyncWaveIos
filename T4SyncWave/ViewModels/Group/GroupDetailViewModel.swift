@@ -40,9 +40,8 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     let audio = AudioPlayerManager.shared
     let rtc = WebRTCManager.shared
     private var syncTimer: Timer?
-    
-    
     private var uiTimer: Timer?     // UI
+    private var playbackStateRequestTimer: Timer?  // Timer para reintentar solicitud de estado
     var isListener : Bool = false
     @Published var localCurrentTime: Double = 0
     @Published var duration: Double = 0
@@ -354,7 +353,8 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", adjustedRemotePosition)), original=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
 
             // Validar que la posición remota sea razonable
-            if adjustedRemotePosition >= 0 && adjustedRemotePosition <= (duration + 10.0) { // Permitir hasta 10 segundos extra
+            let maxAllowedPosition = duration > 0 ? duration + 10.0 : 3600.0  // Si duration=0, permitir hasta 1 hora
+            if adjustedRemotePosition >= 0 && adjustedRemotePosition <= maxAllowedPosition {
                 audio.seek(to: adjustedRemotePosition)
                 localCurrentTime = adjustedRemotePosition
                 print("✅ Sincronización completada")
@@ -388,9 +388,15 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didReceiveRole(_ role: String) {
         print("👑 Rol asignado:", role)
-        
+        isListener = (role == "member")
+
         // When we receive our role, we are connected, mark ourselves as online
         markCurrentUserOnline()
+
+        // Si somos listener, programar una solicitud de estado de playback por si no llega automáticamente
+        if isListener {
+            schedulePlaybackStateRequest()
+        }
     }
     
     /// Mark the current user as online
@@ -699,6 +705,48 @@ extension GroupDetailViewModel {
         uiTimer?.invalidate()
         uiTimer = nil
     }
+
+    // MARK: - Playback State Request for Listeners
+
+    private func schedulePlaybackStateRequest() {
+        stopPlaybackStateRequestTimer()
+
+        // Solicitar estado de playback cada 3 segundos durante 30 segundos
+        // por si la solicitud inicial no llega o se pierde
+        playbackStateRequestTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                guard let self, self.isListener else { return }
+                self.requestPlaybackState()
+            }
+        }
+
+        // Detener después de 30 segundos
+        DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) { [weak self] in
+            self?.stopPlaybackStateRequestTimer()
+        }
+    }
+
+    private func requestPlaybackState() {
+        guard let room = WebRTCManager.shared.currentRoom else {
+            print("⚠️ No room available for playback state request")
+            return
+        }
+
+        let requestMessage: [String: Any] = [
+            "type": "request-playback-state",
+            "room": room
+        ]
+
+        // Usar WebSocketSignaling para enviar la solicitud directamente
+        WebRTCManager.sendSignalingMessage(requestMessage)
+        print("🎧 Solicitando estado de playback al DJ...")
+    }
+
+    private func stopPlaybackStateRequestTimer() {
+        playbackStateRequestTimer?.invalidate()
+        playbackStateRequestTimer = nil
+    }
+
     //{"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766118083}
 }
 

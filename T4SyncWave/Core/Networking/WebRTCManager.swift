@@ -46,6 +46,11 @@ final class WebRTCManager: NSObject, ObservableObject {
         guard let lastPing = lastServerPingTime else { return false }
         return Date().timeIntervalSince(lastPing) < 40.0
     }
+
+    /// Send a signaling message via WebSocket
+    static func sendSignalingMessage(_ message: [String: Any]) {
+        WebSocketSignaling.shared.send(message)
+    }
         private var peerConnection: RTCPeerConnection?
         private var dataChannel: RTCDataChannel?
         private var factory: RTCPeerConnectionFactory!

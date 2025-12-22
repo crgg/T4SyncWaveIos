@@ -243,6 +243,19 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         DispatchQueue.main.async {
             self.connectionState = .connected
             self.reconnectAttempts = 0
+
+            // Si estamos reconectando y somos listener, solicitar estado de playback inmediatamente
+            if let joinSend = self.lastJoinSend, joinSend.role == "member" {
+                print("🎧 Reconexión exitosa como listener, solicitando estado de playback")
+                let requestMessage: [String: Any] = [
+                    "type": "request-playback-state",
+                    "room": joinSend.room
+                ]
+                // Pequeño delay para asegurar que la conexión esté establecida
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.send(requestMessage)
+                }
+            }
         }
     }
     
