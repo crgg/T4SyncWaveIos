@@ -207,7 +207,7 @@ class APICore {
         guard let statusCode else { return true } // error de red
         return (500...599).contains(statusCode)
     }
-    
+ 
     /// Extrae el mensaje de error del JSON del backend
     private func extractErrorMessage(from data: Data, statusCode: Int) -> String {
         // Intentar parsear el JSON una sola vez

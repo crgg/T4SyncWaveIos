@@ -30,59 +30,59 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                VStack(spacing: 0) {
+            VStack(spacing: 0) {
 
-                    // 🎧 Mini Now Playing (personal)
-                    if let track = vm.selectedTrack {
-                        LibraryMiniPlayer(
-                            track: track,
-                            isPlaying: vm.isPlaying,
+                // 🎧 Mini Now Playing (personal)
+                if let track = vm.selectedTrack {
+                    LibraryMiniPlayer(
+                        track: track,
+                        isPlaying: vm.isPlaying,
                             currentTime: vm.localCurrentTime,
                             duration: vm.duration,
                             isRepeatEnabled: vm.audio.isRepeatEnabled,
-                            onPlayPause: {
-                                vm.togglePlay()
-                            },
-                            onStop: {
-                                vm.stop()
+                        onPlayPause: {
+                            vm.togglePlay()
+                        },
+                        onStop: {
+                            vm.stop()
                             },
                             onToggleRepeat: {
                                 vm.audio.toggleRepeat()
-                            }
-                        )
-                    }
-
-                    List {
-
-                        // 🎵 TRACKS
-                        Section("Tracks") {
-                            ForEach(vm.tracks) { track in
-                                TrackRow(
-                                    track: track,
-                                    isPlaying: vm.selectedTrack?.id == track.id
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    handleSelection(track)
-                                }
-                            }
                         }
+                    )
+                }
 
-                        // 👥 SEND TO GROUP (solo en contexto group)
-                        if case .group(let group) = context,
-                           let selected = vm.selectedTrack {
+                List {
 
-                            Section {
-                                Button {
-                                    sendToGroup(groupId: group.id, track: selected)
-                                } label: {
-                                    Label("Send to Group", systemImage: "paperplane.fill")
-                                }
-                                .buttonStyle(.borderedProminent)
+                    // 🎵 TRACKS
+                    Section("Tracks") {
+                        ForEach(vm.tracks) { track in
+                            TrackRow(
+                                track: track,
+                                isPlaying: vm.selectedTrack?.id == track.id
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                handleSelection(track)
                             }
                         }
                     }
-                    .listStyle(.insetGrouped)
+
+                    // 👥 SEND TO GROUP (solo en contexto group)
+                    if case .group(let group) = context,
+                       let selected = vm.selectedTrack {
+
+                        Section {
+                            Button {
+                                sendToGroup(groupId: group.id, track: selected)
+                            } label: {
+                                Label("Send to Group", systemImage: "paperplane.fill")
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+                }
+                .listStyle(.insetGrouped)
                 }
                 .disabled(vm.isUploading)
                 .blur(radius: vm.isUploading ? 2 : 0)

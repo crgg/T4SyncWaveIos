@@ -34,7 +34,7 @@ struct EmptyGroupsView: View {
                 Label("Create Group", systemImage: "plus.circle")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
+                .buttonStyle(.borderedProminent)
             .padding(.horizontal, 40)
         }
         .padding()

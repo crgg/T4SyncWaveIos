@@ -17,7 +17,7 @@ struct MemberRow: View {
 
             // Avatar with online indicator
             ZStack(alignment: .bottomTrailing) {
-                Image(systemName: "person.circle.fill")
+            Image(systemName: "person.circle.fill")
                     .font(.system(size: 32))
                     .foregroundColor(.gray)
                 
@@ -33,8 +33,8 @@ struct MemberRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(member.name)
-                        .font(.body)
+                Text(member.name)
+                    .font(.body)
                     
                     if isOnline {
                         Text("listening")
@@ -48,7 +48,7 @@ struct MemberRow: View {
             }
 
             Spacer()
-            
+
             // Headphones icon for listeners
             Image(systemName: "headphones")
                 .foregroundColor(.secondary)

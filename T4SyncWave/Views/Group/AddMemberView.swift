@@ -42,8 +42,8 @@ struct AddMemberView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("User email", text: $email)
-                        .keyboardType(.emailAddress)
+                TextField("User email", text: $email)
+                    .keyboardType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .onChange(of: email) { _, newValue in
@@ -90,13 +90,13 @@ struct AddMemberView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        dismiss()
-                    }
-                }
+                                dismiss()
+                            }
+                        }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
                         addMember()
-                    }
+                }
                     .disabled(!isValidEmail || isLoading)
                 }
             }

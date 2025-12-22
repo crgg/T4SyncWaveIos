@@ -22,14 +22,14 @@ struct GroupDetailView: View {
 
     var body: some View {
         ZStack {
-            Group {
-                if vm.isLoading {
-                    ProgressView("Loading group...")
-                } else if let group = vm.group {
-                    content(group)
-                        .environmentObject(vm)
-                } else {
-                    Text("Failed to load group")
+        Group {
+            if vm.isLoading {
+                ProgressView("Loading group...")
+            } else if let group = vm.group {
+                content(group)
+                    .environmentObject(vm)
+            } else {
+                Text("Failed to load group")
                 }
             }
             

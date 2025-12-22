@@ -36,21 +36,21 @@ struct NowPlayingCard: View {
 
     var body: some View {
         GeometryReader { geometry in
-            VStack(spacing: 16) {
+        VStack(spacing: 16) {
 
-                if let state {
-                    playingView(state)
-                } else {
-                    emptyView
-                }
-
+            if let state {
+                playingView(state)
+            } else {
+                emptyView
             }
-            .padding()
+
+        }
+        .padding()
             .frame(width: geometry.size.width - 32) // Ancho fijo menos padding
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
-            )
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+        )
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2) // Centrado exacto
         }
         .frame(height: isListener && state == nil ? 180 : (state == nil ? 200 : 220)) // Altura según estado
@@ -77,24 +77,24 @@ struct NowPlayingCard: View {
                     .padding(.top, 8)
             } else {
                 // DJ can add music
-                Image(systemName: "music.note")
-                    .font(.system(size: 42))
-                    .foregroundColor(.secondary)
+            Image(systemName: "music.note")
+                .font(.system(size: 42))
+                .foregroundColor(.secondary)
 
-                Text("No music playing")
-                    .font(.headline)
+            Text("No music playing")
+                .font(.headline)
 
-                Text("Choose a track to start listening together")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+            Text("Choose a track to start listening together")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
 
                 Button(action: onAddMusic) {
-                    Label("Add Music", systemImage: "music.note.plus")
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.top, 8)
+                Label("Add Music", systemImage: "music.note.plus")
             }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 8)
+        }
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.vertical, 20)
@@ -163,37 +163,37 @@ struct NowPlayingCard: View {
             .buttonStyle(.plain)
             .foregroundColor(isRepeatEnabled ? .accentColor : .primary)
             
-            Button(action: {
-                onBackward?()
-            }) {
-                Image(systemName: "gobackward.15")
-                    .font(.system(size: 24))
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+                Button(action: {
+                    onBackward?()
+                }) {
+                    Image(systemName: "gobackward.15")
+                        .font(.system(size: 24))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
 
-            Button(action: {
-                onPlayPause()
-            }) {
-                Image(systemName: state.isPlaying
-                      ? "pause.circle.fill"
-                      : "play.circle.fill")
-                    .font(.system(size: 48))
-                    .frame(width: 56, height: 56)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+                Button(action: {
+                    onPlayPause()
+                }) {
+                    Image(systemName: state.isPlaying
+                          ? "pause.circle.fill"
+                          : "play.circle.fill")
+                        .font(.system(size: 48))
+                        .frame(width: 56, height: 56)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
 
-            Button(action: {
-                onForward?()
-            }) {
-                Image(systemName: "goforward.15")
-                    .font(.system(size: 24))
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
+                Button(action: {
+                    onForward?()
+                }) {
+                    Image(systemName: "goforward.15")
+                        .font(.system(size: 24))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             
             // Spacer para balance visual
             Color.clear
@@ -227,7 +227,7 @@ struct NowPlayingCard: View {
                             .contentShape(Rectangle())
                         Text(isMuted ? "Unmute" : "Mute")
                             .font(.caption2)
-                    }
+            }
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(isMuted ? .red : .primary)

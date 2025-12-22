@@ -34,5 +34,5 @@ struct PlaybackMessage: Codable {
     let isPlaying: Bool
     let timestamp: Int
     let trackUrl : String
-
+    
 }

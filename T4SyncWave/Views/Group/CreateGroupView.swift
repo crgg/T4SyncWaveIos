@@ -21,7 +21,7 @@ struct CreateGroupView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Group name", text: $name)
+                TextField("Group name", text: $name)
                         .onChange(of: name) { _, newValue in
                             if newValue.count > maxNameLength {
                                 name = String(newValue.prefix(maxNameLength))
@@ -41,7 +41,7 @@ struct CreateGroupView: View {
                             isCreating = true
                             await onSave(name.trimmingCharacters(in: .whitespaces))
                             isCreating = false
-                            dismiss()
+                        dismiss()
                         }
                     }
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || isCreating)

@@ -12,6 +12,7 @@ import SwiftUI
     
 protocol WebRTCPlaybackDelegate: AnyObject {
     func didReceivePlayback(_ state: PlaybackState)
+    func didReceivePlaybackStateRequest()
 }
 protocol WebRTCRoleDelegate: AnyObject {
     func didReceiveRole(_ role: String)
@@ -33,7 +34,7 @@ struct RoomUser: Codable {
 final class WebRTCManager: NSObject, ObservableObject {
     weak var roleDelegate: WebRTCRoleDelegate?
     weak var presenceDelegate: WebRTCMemberPresenceDelegate?
-
+    
     static let shared = WebRTCManager()
     weak var playbackDelegate: WebRTCPlaybackDelegate?
 
@@ -153,6 +154,11 @@ final class WebRTCManager: NSObject, ObservableObject {
                 print("📩 Raw playback-state message:", msg)
             }
 
+        case "request-playback-state":
+            // Responder con el estado actual de playback si somos DJ
+            print("📨 Request-playback-state recibido, enviando estado actual")
+            playbackDelegate?.didReceivePlaybackStateRequest()
+
         case "role":
             if let role = msg["role"] as? String {
                     DispatchQueue.main.async {
@@ -179,6 +185,16 @@ final class WebRTCManager: NSObject, ObservableObject {
             print("👋 Welcome: role=\(role), isHost=\(isHost)")
             DispatchQueue.main.async {
                 self.roleDelegate?.didReceiveRole(role)
+            }
+
+            // Si somos listener (member), solicitar estado de playback actual
+            if role == "member" {
+                print("🎧 Listener conectado, solicitando estado de playback")
+                let requestMessage: [String: Any] = [
+                    "type": "request-playback-state",
+                    "room": WebSocketSignaling.shared.currentJoinSend?.room ?? ""
+                ]
+                WebSocketSignaling.shared.send(requestMessage)
             }
             
         case "room-users":
@@ -215,7 +231,7 @@ final class WebRTCManager: NSObject, ObservableObject {
             print("👋 Usuario desconectado: \(userName) de sala \(room)")
             DispatchQueue.main.async {
                 self.presenceDelegate?.didMemberLeave(userId: userId, userName: userName, room: room)
-            }
+                }
 
         default:
             break

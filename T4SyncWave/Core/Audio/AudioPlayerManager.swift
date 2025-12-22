@@ -95,7 +95,7 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         
         // Limpiar player anterior ANTES de crear uno nuevo
         cleanupCurrentPlayer()
-        
+
         // Reset estado
         isReadyToPlay = false
         currentTime = 0
@@ -269,7 +269,7 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     
     private func observePlaybackTime() {
         guard let player = player else { return }
-        
+
         // El token ya debería estar limpio desde cleanupCurrentPlayer()
         // pero por seguridad verificamos
         if timeObserverToken != nil {

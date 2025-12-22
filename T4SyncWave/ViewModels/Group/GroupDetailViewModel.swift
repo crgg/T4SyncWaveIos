@@ -264,7 +264,18 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 //    var listeners: [GroupMember] {
 //        group.members.filter { $0.role == .member }
 //    }
-    
+
+    func didReceivePlaybackStateRequest() {
+        // Solo responder si somos DJ y hay música reproduciéndose
+        guard !isListener, let track = selectedTrack, audio.isReadyToPlay else {
+            print("⏭️ Ignorando request-playback-state (no somos DJ o no hay track)")
+            return
+        }
+
+        print("📤 Enviando estado de playback solicitado")
+        broadcastPlayback()
+    }
+
     func didReceivePlayback(_ state: PlaybackState) {
         
         print("📥 Playback recibido: isPlaying=\(state.isPlaying), position=\(state.position)")
@@ -302,7 +313,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             print("🔄 DJ reinició la música desde el principio")
             // Forzar sincronización inmediata cuando el DJ reinicia
         }
-        let isJumpToBeginning = state.position < 1.0 && state.isPlaying
+        
 
         // No sincronizar si ambos están cerca del final (música terminando)
         if isNearEnd && isLocalNearEnd && !isRestartFromBeginning {

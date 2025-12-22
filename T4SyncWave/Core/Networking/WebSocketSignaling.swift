@@ -149,11 +149,11 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     private func handle(_ message: URLSessionWebSocketTask.Message) {
         guard case .string(let text) = message else { return }
 
-        print("📩 WS recibido:", text)
+           print("📩 WS recibido:", text)
 
-        guard
-            let data = text.data(using: .utf8),
-            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+           guard
+               let data = text.data(using: .utf8),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
         else { 
             print("❌ Error parsing JSON from WS message")
             return 
@@ -172,7 +172,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
             }
         }
         
-        WebRTCManager.shared.handleSignaling(json)
+           WebRTCManager.shared.handleSignaling(json)
     }
     
     // MARK: - Connection Error Handling

@@ -29,23 +29,23 @@ struct LibraryMiniPlayer: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            HStack(spacing: 12) {
+        HStack(spacing: 12) {
 
-                Image(systemName: "music.note")
-                    .font(.title3)
+            Image(systemName: "music.note")
+                .font(.title3)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(track.title)
-                        .font(.subheadline)
-                        .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(track.title)
+                    .font(.subheadline)
+                    .lineLimit(1)
 
                     Text("\(formatTime(currentTime)) / \(formatTime(duration))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                         .monospacedDigit()
-                }
+            }
 
-                Spacer()
+            Spacer()
                 
                 // 🔁 Botón Repetir
                 Button(action: onToggleRepeat) {
@@ -54,17 +54,17 @@ struct LibraryMiniPlayer: View {
                         .foregroundColor(isRepeatEnabled ? .accentColor : .primary)
                 }
 
-                Button(action: onPlayPause) {
-                    Image(systemName: isPlaying
-                          ? "pause.fill"
-                          : "play.fill")
-                        .font(.title3)
-                }
+            Button(action: onPlayPause) {
+                Image(systemName: isPlaying
+                      ? "pause.fill"
+                      : "play.fill")
+                    .font(.title3)
+            }
 
-                Button(action: onStop) {
-                    Image(systemName: "stop.fill")
-                        .font(.title3)
-                }
+            Button(action: onStop) {
+                Image(systemName: "stop.fill")
+                    .font(.title3)
+            }
             }
             
             // Progress bar
