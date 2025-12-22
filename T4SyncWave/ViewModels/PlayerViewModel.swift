@@ -110,6 +110,17 @@ final class PlayerViewModel: ObservableObject,
 
     // MARK: - WebRTCPlaybackDelegate
 
+    func didReceivePlaybackStateRequest() {
+        // Solo responder si somos host (DJ) y hay música reproduciéndose
+        guard isHost, audio.isReadyToPlay else {
+            print("⏭️ PlayerViewModel: Ignorando request-playback-state (no somos host o no hay track)")
+            return
+        }
+
+        print("📤 PlayerViewModel: Enviando estado de playback solicitado")
+        broadcastPlayback()
+    }
+
     /// 🔴 AQUÍ VA didReceivePlayback
     func didReceivePlayback(_ state: PlaybackState) {
         

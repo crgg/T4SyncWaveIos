@@ -262,7 +262,18 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         rtc.sendData(state)
         print("📤 playback-state:", state)
     }
-    
+
+    func didReceivePlaybackStateRequest() {
+        // Solo responder si somos host (DJ) y hay música reproduciéndose
+        guard isHost, let track = selectedTrack, audio.isReadyToPlay else {
+            print("⏭️ LibraryViewModel: Ignorando request-playback-state (no somos host o no hay track)")
+            return
+        }
+
+        print("📤 LibraryViewModel: Enviando estado de playback solicitado")
+        broadcastPlayback()
+    }
+
     func didReceivePlayback(_ state: PlaybackState) {
         guard !isHost else { return }
 
