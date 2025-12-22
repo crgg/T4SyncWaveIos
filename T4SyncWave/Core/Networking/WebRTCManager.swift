@@ -202,7 +202,7 @@ final class WebRTCManager: NSObject, ObservableObject {
                 print("🎧 Listener conectado, solicitando estado de playback")
                 let requestMessage: [String: Any] = [
                     "type": "request-playback-state",
-                    "room": WebSocketSignaling.shared.currentJoinSend?.room ?? ""
+                    "roomId": WebSocketSignaling.shared.currentJoinSend?.room ?? ""
                 ]
                 WebSocketSignaling.shared.send(requestMessage)
             }

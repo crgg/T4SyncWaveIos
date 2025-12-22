@@ -249,7 +249,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
                 print("🎧 Reconexión exitosa como listener, solicitando estado de playback")
                 let requestMessage: [String: Any] = [
                     "type": "request-playback-state",
-                    "room": joinSend.room
+                    "roomId": joinSend.room
                 ]
                 // Pequeño delay para asegurar que la conexión esté establecida
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {

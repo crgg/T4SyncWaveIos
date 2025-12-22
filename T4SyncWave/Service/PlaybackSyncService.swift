@@ -25,7 +25,7 @@ final class PlaybackSyncService {
 
         let payload: [String: Any] = [
             "type": "playback-state",
-            "room": roomId,
+            "roomId": roomId,
             "action": isPlaying ? "play" : "pause",
             "position": position
         ]

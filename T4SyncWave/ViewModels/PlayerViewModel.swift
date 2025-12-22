@@ -176,7 +176,7 @@ final class PlayerViewModel: ObservableObject,
 
         WebSocketSignaling.shared.send([
             "type": "playback-state",
-            "room": roomId,
+            "roomId": roomId,
 //            "position": position,
             "isPlaying": playing,
             "timestamp": Int(Date().timeIntervalSince1970)

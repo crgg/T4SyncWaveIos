@@ -466,7 +466,7 @@ extension WebRTCManager {
     ) {
         let payload: [String: Any] = [
             "type": "playback-state",
-            "room": roomId,
+            "roomId": roomId,
             "position": position,
             "trackUrl" : trackUrl,
             "isPlaying": isPlaying,
