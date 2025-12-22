@@ -275,122 +275,6 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         broadcastPlayback()
     }
 
-    func didReceivePlayback(_ state: PlaybackState) {
-        
-        print("📥 Playback recibido: isPlaying=\(state.isPlaying), position=\(state.position)")
-        guard isListener else { 
-            print("⏭️ Ignorando playback (soy DJ)")
-            return 
-        }
-
-        guard let g = self.group else { return }
- 
-        // Cargar track si cambió
-        if selectedTrack?.fileURL.absoluteString != state.trackUrl {
-            if let trackUrl = state.trackUrl, let url = URL(string: trackUrl) {
-                print("🎵 Cargando nuevo track: \(trackUrl)")
-                audio.loadRemote(url: url, title: "Remote")
-            } else {
-                print("🎵 No hay track para cargar (trackUrl es nil)")
-                // Si no hay track, detener reproducción
-                audio.pause()
-                selectedTrack = nil
-            }
-
-            // Actualizar selectedTrack y duration desde el grupo
-            if let track = g.currentTrack {
-                selectedTrack = track
-                duration = Double(track.durationMs) / 1000
-            }
-        }
-
-        // Calcular posición ajustada considerando el tiempo de viaje del mensaje
-        let currentTime = Date().timeIntervalSince1970
-        let messageAge = currentTime - Double(state.timestamp)
-        let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
-
-        print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
-
-        // Sincronizar posición con lógica mejorada
-        let diff = abs(audio.currentTime - adjustedRemotePosition)
-        let duration = audio.duration
-        let isNearEnd = duration > 0 && adjustedRemotePosition > (duration - 2.0) // Dentro de los últimos 2 segundos
-        let isLocalNearEnd = duration > 0 && audio.currentTime > (duration - 2.0) // Local también cerca del final
-
-        // Detectar reinicio desde el principio
-        let isRestartFromBeginning = audio.currentTime > 5.0 && adjustedRemotePosition < 2.0 && state.isPlaying
-        let isJumpToBeginning = adjustedRemotePosition < 1.0 && state.isPlaying
-
-        if isRestartFromBeginning {
-            print("🔄 DJ reinició la música desde el principio")
-            // Forzar sincronización inmediata cuando el DJ reinicia
-        }
-        
-
-        // No sincronizar si ambos están cerca del final (música terminando)
-        if isNearEnd && isLocalNearEnd && !isRestartFromBeginning {
-            print("🎵 Ambos cerca del final (duración=\(String(format: "%.1f", duration))), no sincronizar")
-            return
-        }
-
-        // Si el DJ pausó cerca del final, no sincronizar para evitar saltos
-        if isNearEnd && !state.isPlaying && !isRestartFromBeginning {
-            print("🎵 DJ pausó cerca del final, no sincronizar")
-            return
-        }
-
-        // Sincronizar si hay diferencia significativa o es un reinicio
-        // Umbral más agresivo para mejor sincronización
-        let syncThreshold: Double
-        if isRestartFromBeginning || isJumpToBeginning {
-            syncThreshold = 0.3 // Reinicios: sincronizar inmediatamente
-            print("🔄 Reinicio detectado, sincronizando inmediatamente")
-        } else if diff > 30.0 {
-            syncThreshold = 3.0 // Grandes diferencias: ser más permisivo
-        } else if diff > 10.0 {
-            syncThreshold = 2.0
-        } else if diff > 3.0 {
-            syncThreshold = 1.0
-        } else {
-            syncThreshold = 0.5 // Reducido de 0.8 a 0.5 para mejor sincronización
-        }
-
-        if diff > syncThreshold || isRestartFromBeginning || isJumpToBeginning {
-            print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", adjustedRemotePosition)), original=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
-
-            // Validar que la posición remota sea razonable
-            let maxAllowedPosition = duration > 0 ? duration + 10.0 : 3600.0  // Si duration=0, permitir hasta 1 hora
-            if adjustedRemotePosition >= 0 && adjustedRemotePosition <= maxAllowedPosition {
-                audio.seek(to: adjustedRemotePosition)
-                localCurrentTime = adjustedRemotePosition
-                print("✅ Sincronización completada")
-            } else {
-                print("⚠️ Posición remota inválida: \(adjustedRemotePosition), duración=\(String(format: "%.1f", duration))")
-            }
-        } else {
-            print("⏸️ No sincronizando: diff=\(String(format: "%.2f", diff)) <= threshold=\(syncThreshold)")
-        }
-        
-        // Actualizar estado de reproducción
-        let wasPlaying = isPlaying
-        if state.isPlaying {
-            if !wasPlaying {
-                print("▶️ Iniciando reproducción (comando del DJ)")
-            }
-            audio.play()
-            isPlaying = true
-            group?.isPlaying = true
-            startUITimer()
-        } else {
-            if wasPlaying {
-                print("⏸️ Pausando reproducción (comando del DJ)")
-            }
-            audio.pause()
-            isPlaying = false
-            group?.isPlaying = false
-            stopUITimer()
-        }
-    }
     
     func didReceiveRole(_ role: String) {
         print("👑 Rol asignado:", role)
@@ -757,6 +641,123 @@ extension GroupDetailViewModel {
     }
 
     // MARK: - WebRTCPlaybackDelegate
+
+    func didReceivePlayback(_ state: PlaybackState) {
+
+        print("📥 Playback recibido: isPlaying=\(state.isPlaying), position=\(state.position)")
+        guard isListener else {
+            print("⏭️ Ignorando playback (soy DJ)")
+            return
+        }
+
+        guard let g = self.group else { return }
+
+        // Cargar track si cambió
+        if selectedTrack?.fileURL.absoluteString != state.trackUrl {
+            if let trackUrl = state.trackUrl, let url = URL(string: trackUrl) {
+                print("🎵 Cargando nuevo track: \(trackUrl)")
+                audio.loadRemote(url: url, title: "Remote")
+            } else {
+                print("🎵 No hay track para cargar (trackUrl es nil)")
+                // Si no hay track, detener reproducción
+                audio.pause()
+                selectedTrack = nil
+            }
+
+            // Actualizar selectedTrack y duration desde el grupo
+            if let track = g.currentTrack {
+                selectedTrack = track
+                duration = Double(track.durationMs) / 1000
+            }
+        }
+
+        // Calcular posición ajustada considerando el tiempo de viaje del mensaje
+        let currentTime = Date().timeIntervalSince1970
+        let messageAge = currentTime - Double(state.timestamp)
+        let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
+
+        print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
+
+        // Sincronizar posición con lógica mejorada
+        let diff = abs(audio.currentTime - adjustedRemotePosition)
+        let duration = audio.duration
+        let isNearEnd = duration > 0 && adjustedRemotePosition > (duration - 2.0) // Dentro de los últimos 2 segundos
+        let isLocalNearEnd = duration > 0 && audio.currentTime > (duration - 2.0) // Local también cerca del final
+
+        // Detectar reinicio desde el principio
+        let isRestartFromBeginning = audio.currentTime > 5.0 && adjustedRemotePosition < 2.0 && state.isPlaying
+        let isJumpToBeginning = adjustedRemotePosition < 1.0 && state.isPlaying
+
+        if isRestartFromBeginning {
+            print("🔄 DJ reinició la música desde el principio")
+            // Forzar sincronización inmediata cuando el DJ reinicia
+        }
+
+
+        // No sincronizar si ambos están cerca del final (música terminando)
+        if isNearEnd && isLocalNearEnd && !isRestartFromBeginning {
+            print("🎵 Ambos cerca del final (duración=\(String(format: "%.1f", duration))), no sincronizar")
+            return
+        }
+
+        // Si el DJ pausó cerca del final, no sincronizar para evitar saltos
+        if isNearEnd && !state.isPlaying && !isRestartFromBeginning {
+            print("🎵 DJ pausó cerca del final, no sincronizar")
+            return
+        }
+
+        // Sincronizar si hay diferencia significativa o es un reinicio
+        // Umbral más agresivo para mejor sincronización
+        let syncThreshold: Double
+        if isRestartFromBeginning || isJumpToBeginning {
+            syncThreshold = 0.3 // Reinicios: sincronizar inmediatamente
+            print("🔄 Reinicio detectado, sincronizando inmediatamente")
+        } else if diff > 30.0 {
+            syncThreshold = 3.0 // Grandes diferencias: ser más permisivo
+        } else if diff > 10.0 {
+            syncThreshold = 2.0
+        } else if diff > 3.0 {
+            syncThreshold = 1.0
+        } else {
+            syncThreshold = 0.5 // Reducido de 0.8 a 0.5 para mejor sincronización
+        }
+
+        if diff > syncThreshold || isRestartFromBeginning || isJumpToBeginning {
+            print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", adjustedRemotePosition)), original=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
+
+            // Validar que la posición remota sea razonable
+            let maxAllowedPosition = duration > 0 ? duration + 10.0 : 3600.0  // Si duration=0, permitir hasta 1 hora
+            if adjustedRemotePosition >= 0 && adjustedRemotePosition <= maxAllowedPosition {
+                audio.seek(to: adjustedRemotePosition)
+                localCurrentTime = adjustedRemotePosition
+                print("✅ Sincronización completada")
+            } else {
+                print("⚠️ Posición remota inválida: \(adjustedRemotePosition), duración=\(String(format: "%.1f", duration))")
+            }
+        } else {
+            print("⏸️ No sincronizando: diff=\(String(format: "%.2f", diff)) <= threshold=\(syncThreshold)")
+        }
+
+        // Actualizar estado de reproducción
+        let wasPlaying = isPlaying
+        if state.isPlaying {
+            if !wasPlaying {
+                print("▶️ Iniciando reproducción (comando del DJ)")
+            }
+            audio.play()
+            isPlaying = true
+            group?.isPlaying = true
+            startUITimer()
+        } else {
+            if wasPlaying {
+                print("⏸️ Pausando reproducción (comando del DJ)")
+            }
+            audio.pause()
+            isPlaying = false
+            group?.isPlaying = false
+            stopUITimer()
+        }
+    }
 
     func didReceivePlaybackStateRequest() {
         // Responder con el estado actual de reproducción si somos DJ
