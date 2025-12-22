@@ -118,7 +118,7 @@ final class PlayerViewModel: ObservableObject,
         }
 
         print("📤 PlayerViewModel: Enviando estado de playback solicitado")
-        broadcastPlayback()
+        broadcastState()
     }
 
     /// 🔴 AQUÍ VA didReceivePlayback
