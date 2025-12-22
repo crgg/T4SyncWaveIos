@@ -320,7 +320,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "68"
             endingLineNumber = "68"
-            landmarkName = "sendData(_:)"
+            landmarkName = "setRemoteAnswer(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -336,7 +336,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "81"
             endingLineNumber = "81"
-            landmarkName = "handleSignaling(_:)"
+            landmarkName = "addIceCandidate(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

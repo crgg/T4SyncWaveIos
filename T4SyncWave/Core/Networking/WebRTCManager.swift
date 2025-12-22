@@ -166,11 +166,11 @@ final class WebRTCManager: NSObject, ObservableObject {
             lastServerPingTime = Date()
             let timestamp = Int(Date().timeIntervalSince1970 * 1000)
             print("🏓 Server-ping recibido (timestamp: \(timestamp)), respondiendo server-pong")
-            let pongMessage = [
+            let pongMessage: [String: Any] = [
                 "type": "server-pong",
                 "timestamp": timestamp
             ]
-            send(pongMessage)
+            WebSocketSignaling.shared.send(pongMessage)
 
         case "welcome":
             // Server welcome message with peerId and role
