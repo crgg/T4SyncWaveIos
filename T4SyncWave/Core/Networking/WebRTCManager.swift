@@ -51,6 +51,11 @@ final class WebRTCManager: NSObject, ObservableObject {
     static func sendSignalingMessage(_ message: [String: Any]) {
         WebSocketSignaling.shared.send(message)
     }
+
+    /// Get current room from WebSocketSignaling
+    static func getCurrentRoom() -> String? {
+        return WebSocketSignaling.shared.currentJoinSend?.room
+    }
         private var peerConnection: RTCPeerConnection?
         private var dataChannel: RTCDataChannel?
         private var factory: RTCPeerConnectionFactory!

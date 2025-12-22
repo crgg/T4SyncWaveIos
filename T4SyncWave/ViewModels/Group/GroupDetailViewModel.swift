@@ -727,7 +727,7 @@ extension GroupDetailViewModel {
     }
 
     private func requestPlaybackState() {
-        guard let room = WebRTCManager.shared.currentRoom else {
+        guard let room = WebRTCManager.getCurrentRoom() else {
             print("⚠️ No room available for playback state request")
             return
         }
