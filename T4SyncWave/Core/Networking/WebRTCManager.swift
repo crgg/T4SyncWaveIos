@@ -135,7 +135,7 @@ final class WebRTCManager: NSObject, ObservableObject {
                 print("🎵 PlaybackMessage: isPlaying=\(playback.isPlaying), position=\(playback.position ?? 0), room=\(playback.room ?? "nil")")
 
                 // Use room from message or fallback to current room from WebRTC
-                let roomId = playback.room ?? (lastJoinSend?.room ?? "")
+                let roomId = playback.room ?? (WebSocketSignaling.shared.currentJoinSend?.room ?? "")
 
                 let state = PlaybackState(
                     roomId: roomId,

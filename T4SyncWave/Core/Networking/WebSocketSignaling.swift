@@ -116,6 +116,11 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         connectionState == .connected
     }
 
+    /// Último JoinSend para acceder desde otros managers
+    var currentJoinSend: JoinSend? {
+        lastJoinSend
+    }
+
     func send(_ dict: [String: Any]) {
         guard let data = try? JSONSerialization.data(withJSONObject: dict),
               let text = String(data: data, encoding: .utf8) else { return }
