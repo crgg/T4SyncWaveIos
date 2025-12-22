@@ -33,9 +33,18 @@ struct RoomUser: Codable {
 final class WebRTCManager: NSObject, ObservableObject {
     weak var roleDelegate: WebRTCRoleDelegate?
     weak var presenceDelegate: WebRTCMemberPresenceDelegate?
-    
+
     static let shared = WebRTCManager()
     weak var playbackDelegate: WebRTCPlaybackDelegate?
+
+    // Para debugging de heartbeat
+    private var lastServerPingTime: Date?
+
+    /// Verifica si el heartbeat está funcionando (último ping < 40 segundos)
+    var isHeartbeatActive: Bool {
+        guard let lastPing = lastServerPingTime else { return false }
+        return Date().timeIntervalSince(lastPing) < 40.0
+    }
         private var peerConnection: RTCPeerConnection?
         private var dataChannel: RTCDataChannel?
         private var factory: RTCPeerConnectionFactory!
@@ -150,7 +159,19 @@ final class WebRTCManager: NSObject, ObservableObject {
                         self.roleDelegate?.didReceiveRole(role)
                     }
                 }
-            
+
+        case "server-ping":
+            // ⚡ IMPORTANTE: Responder inmediatamente al server-ping para mantener conexión viva
+            // El servidor desconecta si no responde en < 35 segundos
+            lastServerPingTime = Date()
+            let timestamp = Int(Date().timeIntervalSince1970 * 1000)
+            print("🏓 Server-ping recibido (timestamp: \(timestamp)), respondiendo server-pong")
+            let pongMessage = [
+                "type": "server-pong",
+                "timestamp": timestamp
+            ]
+            send(pongMessage)
+
         case "welcome":
             // Server welcome message with peerId and role
             let role = msg["role"] as? String ?? ""

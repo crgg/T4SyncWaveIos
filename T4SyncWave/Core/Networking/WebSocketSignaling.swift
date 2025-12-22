@@ -207,8 +207,10 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     
     private func startPingTimer() {
         stopPingTimer()
-        
-        pingTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+
+        // Enviar pings cada 45 segundos (menos frecuente que server-ping cada ~25-30s)
+        // para no interferir con el sistema server-ping/server-pong
+        pingTimer = Timer.scheduledTimer(withTimeInterval: 45, repeats: true) { [weak self] _ in
             self?.sendPing()
         }
     }
