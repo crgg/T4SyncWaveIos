@@ -299,15 +299,22 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             }
         }
 
+        // Calcular posición ajustada considerando el tiempo de viaje del mensaje
+        let currentTime = Date().timeIntervalSince1970
+        let messageAge = currentTime - Double(state.timestamp)
+        let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
+
+        print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
+
         // Sincronizar posición con lógica mejorada
-        let diff = abs(audio.currentTime - state.position)
+        let diff = abs(audio.currentTime - adjustedRemotePosition)
         let duration = audio.duration
-        let isNearEnd = duration > 0 && state.position > (duration - 2.0) // Dentro de los últimos 2 segundos
+        let isNearEnd = duration > 0 && adjustedRemotePosition > (duration - 2.0) // Dentro de los últimos 2 segundos
         let isLocalNearEnd = duration > 0 && audio.currentTime > (duration - 2.0) // Local también cerca del final
 
         // Detectar reinicio desde el principio
-        let isRestartFromBeginning = audio.currentTime > 5.0 && state.position < 2.0 && state.isPlaying
-        let isJumpToBeginning = state.position < 1.0 && state.isPlaying
+        let isRestartFromBeginning = audio.currentTime > 5.0 && adjustedRemotePosition < 2.0 && state.isPlaying
+        let isJumpToBeginning = adjustedRemotePosition < 1.0 && state.isPlaying
 
         if isRestartFromBeginning {
             print("🔄 DJ reinició la música desde el principio")
@@ -328,34 +335,34 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         }
 
         // Sincronizar si hay diferencia significativa o es un reinicio
-        // Umbral dinámico basado en la magnitud de la diferencia
+        // Umbral más agresivo para mejor sincronización
         let syncThreshold: Double
         if isRestartFromBeginning || isJumpToBeginning {
-            syncThreshold = 0.5 // Reinicios: sincronizar inmediatamente
+            syncThreshold = 0.3 // Reinicios: sincronizar inmediatamente
             print("🔄 Reinicio detectado, sincronizando inmediatamente")
         } else if diff > 30.0 {
-            syncThreshold = 8.0 // Grandes diferencias: ser más permisivo
+            syncThreshold = 3.0 // Grandes diferencias: ser más permisivo
         } else if diff > 10.0 {
-            syncThreshold = 4.0
+            syncThreshold = 2.0
         } else if diff > 3.0 {
-            syncThreshold = 1.5
+            syncThreshold = 1.0
         } else {
-            syncThreshold = 0.8
+            syncThreshold = 0.5 // Reducido de 0.8 a 0.5 para mejor sincronización
         }
 
         if diff > syncThreshold || isRestartFromBeginning || isJumpToBeginning {
-            print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
+            print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", adjustedRemotePosition)), original=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
 
             // Validar que la posición remota sea razonable
-            if state.position >= 0 && state.position <= (duration + 10.0) { // Permitir hasta 10 segundos extra
-                audio.seek(to: state.position)
-                localCurrentTime = state.position
+            if adjustedRemotePosition >= 0 && adjustedRemotePosition <= (duration + 10.0) { // Permitir hasta 10 segundos extra
+                audio.seek(to: adjustedRemotePosition)
+                localCurrentTime = adjustedRemotePosition
                 print("✅ Sincronización completada")
             } else {
-                print("⚠️ Posición remota inválida: \(state.position), duración=\(String(format: "%.1f", duration))")
+                print("⚠️ Posición remota inválida: \(adjustedRemotePosition), duración=\(String(format: "%.1f", duration))")
             }
-        } else if diff <= 0.3 {
-            print("✅ Posición sincronizada (diff=\(String(format: "%.2f", diff)))")
+        } else {
+            print("⏸️ No sincronizando: diff=\(String(format: "%.2f", diff)) <= threshold=\(syncThreshold)")
         }
         
         // Actualizar estado de reproducción
