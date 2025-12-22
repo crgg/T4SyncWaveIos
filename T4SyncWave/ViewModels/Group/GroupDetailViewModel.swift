@@ -25,6 +25,15 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     // Toast message when someone joins
     @Published var toastMessage: String?
     
+    // Mute state for listeners
+    @Published var isMuted: Bool = false
+
+    // Repeat mode
+    var isRepeatEnabled: Bool {
+        get { audio.isRepeatEnabled }
+        set { audio.isRepeatEnabled = newValue }
+    }
+
     // Current user ID
     let currentUserId: String
         
@@ -64,11 +73,20 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
                 }
             }
             .store(in: &cancellables)
-        
+
         NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.handleAppDidEnterBackground()
+                }
+            }
+            .store(in: &cancellables)
+
+        // Observer para cuando la música termina localmente
+        NotificationCenter.default.publisher(for: .audioDidFinishPlaying)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.handleAudioDidFinish()
                 }
             }
             .store(in: &cancellables)
@@ -82,6 +100,15 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     private func handleAppDidEnterBackground() {
         print("📱 App entró en background")
         // Opcional: pausar timers para ahorrar batería
+    }
+
+    private func handleAudioDidFinish() {
+        print("🏁 Música terminó localmente")
+        // Solo marcar como terminada si estamos reproduciendo
+        // No pausar automáticamente ya que el DJ podría reiniciar
+        if isPlaying && !isRepeatEnabled {
+            print("🎵 Música terminó, esperando comando del DJ para continuar")
+        }
     }
     
     func reconnectIfNeeded() {
@@ -240,37 +267,101 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didReceivePlayback(_ state: PlaybackState) {
         
-        print("📥 Playback recibido:", state)
-        guard isListener else { return }
+        print("📥 Playback recibido: isPlaying=\(state.isPlaying), position=\(state.position)")
+        guard isListener else { 
+            print("⏭️ Ignorando playback (soy DJ)")
+            return 
+        }
 
         guard let g = self.group else { return }
  
         // Cargar track si cambió
         if selectedTrack?.fileURL.absoluteString != state.trackUrl {
+            print("🎵 Cargando nuevo track: \(state.trackUrl)")
             let url = URL(string: state.trackUrl)!
             audio.loadRemote(url: url, title: "Remote")
-            
+
             // Actualizar selectedTrack y duration desde el grupo
             if let track = g.currentTrack {
                 selectedTrack = track
                 duration = Double(track.durationMs) / 1000
             }
         }
-        
-        // Sincronizar posición si hay diferencia significativa
+
+        // Detectar si el DJ reinició la música desde el principio
+        let isRestartFromBeginning = audio.currentTime > 10.0 && state.position < 2.0 && state.isPlaying
+        if isRestartFromBeginning {
+            print("🔄 DJ reinició la música desde el principio")
+            // Forzar sincronización inmediata cuando el DJ reinicia
+        }
+
+        // Sincronizar posición con lógica mejorada
         let diff = abs(audio.currentTime - state.position)
-        if diff > 0.7 {
-            audio.seek(to: state.position)
-            localCurrentTime = state.position
+        let duration = audio.duration
+        let isNearEnd = duration > 0 && state.position > (duration - 2.0) // Dentro de los últimos 2 segundos
+        let isLocalNearEnd = duration > 0 && audio.currentTime > (duration - 2.0) // Local también cerca del final
+
+        // Detectar reinicio desde el principio
+        let isRestartFromBeginning = audio.currentTime > 5.0 && state.position < 2.0 && state.isPlaying
+        let isJumpToBeginning = state.position < 1.0 && state.isPlaying
+
+        // No sincronizar si ambos están cerca del final (música terminando)
+        if isNearEnd && isLocalNearEnd && !isRestartFromBeginning {
+            print("🎵 Ambos cerca del final (duración=\(String(format: "%.1f", duration))), no sincronizar")
+            return
+        }
+
+        // Si el DJ pausó cerca del final, no sincronizar para evitar saltos
+        if isNearEnd && !state.isPlaying && !isRestartFromBeginning {
+            print("🎵 DJ pausó cerca del final, no sincronizar")
+            return
+        }
+
+        // Sincronizar si hay diferencia significativa o es un reinicio
+        // Umbral dinámico basado en la magnitud de la diferencia
+        let syncThreshold: Double
+        if isRestartFromBeginning || isJumpToBeginning {
+            syncThreshold = 0.5 // Reinicios: sincronizar inmediatamente
+            print("🔄 Reinicio detectado, sincronizando inmediatamente")
+        } else if diff > 30.0 {
+            syncThreshold = 8.0 // Grandes diferencias: ser más permisivo
+        } else if diff > 10.0 {
+            syncThreshold = 4.0
+        } else if diff > 3.0 {
+            syncThreshold = 1.5
+        } else {
+            syncThreshold = 0.8
+        }
+
+        if diff > syncThreshold || isRestartFromBeginning || isJumpToBeginning {
+            print("⏱️ Sincronizando posición: local=\(String(format: "%.2f", audio.currentTime)), remoto=\(String(format: "%.2f", state.position)), diff=\(String(format: "%.2f", diff)), threshold=\(syncThreshold)")
+
+            // Validar que la posición remota sea razonable
+            if state.position >= 0 && state.position <= (duration + 10.0) { // Permitir hasta 10 segundos extra
+                audio.seek(to: state.position)
+                localCurrentTime = state.position
+                print("✅ Sincronización completada")
+            } else {
+                print("⚠️ Posición remota inválida: \(state.position), duración=\(String(format: "%.1f", duration))")
+            }
+        } else if diff <= 0.3 {
+            print("✅ Posición sincronizada (diff=\(String(format: "%.2f", diff)))")
         }
         
         // Actualizar estado de reproducción
+        let wasPlaying = isPlaying
         if state.isPlaying {
+            if !wasPlaying {
+                print("▶️ Iniciando reproducción (comando del DJ)")
+            }
             audio.play()
             isPlaying = true
             group?.isPlaying = true
-            startUITimer()  // 👈 Iniciar timer para actualizar segundos
+            startUITimer()
         } else {
+            if wasPlaying {
+                print("⏸️ Pausando reproducción (comando del DJ)")
+            }
             audio.pause()
             isPlaying = false
             group?.isPlaying = false
@@ -280,13 +371,36 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didReceiveRole(_ role: String) {
         print("👑 Rol asignado:", role)
+        
+        // When we receive our role, we are connected, mark ourselves as online
+        markCurrentUserOnline()
+    }
+    
+    /// Mark the current user as online
+    private func markCurrentUserOnline() {
+        // Add current user ID to online members
+        if !currentUserId.isEmpty {
+            onlineMembers.insert(currentUserId)
+            print("✅ Usuario actual marcado como online: \(currentUserId)")
+        }
+        
+        // Also try to find by name in member list (match with current user's name)
+        if let currentUserName = SessionStore.shared.loadUser()?.name,
+           let member = group?.members.first(where: { $0.name.lowercased() == currentUserName.lowercased() }) {
+            onlineMembers.insert(member.id)
+            print("✅ Miembro actual marcado como online por nombre: \(member.id)")
+        }
     }
     
     // MARK: - WebRTCMemberPresenceDelegate
     
     func didMemberJoin(userId: String, userName: String, room: String) {
         guard room == groupId else { return }
-        guard userId != currentUserId else { return } // Don't notify about myself
+        guard userId != currentUserId else { 
+            // Current user joined, mark as online
+            markCurrentUserOnline()
+            return 
+        }
         
         print("✅ Miembro conectado: \(userName) (\(userId))")
         onlineMembers.insert(userId)
@@ -304,6 +418,31 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         
         // Show toast
         showToast("\(userName) left")
+    }
+    
+    func didReceiveRoomUsers(_ users: [RoomUser], room: String) {
+        guard room == groupId else { return }
+        
+        print("👥 Usuarios en sala (\(users.count)): \(users.map { "\($0.userName) (\($0.role))" })")
+        print("👥 Miembros del grupo: \(group?.members.map { "\($0.name) (id:\($0.id))" } ?? [])")
+        
+        // Update online members based on room users
+        for user in users {
+            // Try to match by userName (case-insensitive)
+            if let member = group?.members.first(where: { 
+                $0.name.lowercased() == user.userName.lowercased() 
+            }) {
+                onlineMembers.insert(member.id)
+                print("✅ Match encontrado: \(user.userName) -> member.id: \(member.id)")
+            } else {
+                print("⚠️ No se encontró match para: \(user.userName)")
+            }
+        }
+        
+        // Always mark current user as online if we're in this room
+        markCurrentUserOnline()
+        
+        print("👥 onlineMembers actualizado: \(onlineMembers)")
     }
     
     /// Show a toast message that auto-dismisses
@@ -335,6 +474,23 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         return members.filter { member in
             member.role != .dj && member.id != currentUserId
         }
+    }
+    
+    /// Toggle mute for listeners (local only, doesn't affect DJ)
+    func toggleMute() {
+        isMuted.toggle()
+        if isMuted {
+            audio.setVolume(0)
+            print("🔇 Audio silenciado")
+        } else {
+            audio.setVolume(1)
+            print("🔊 Audio activado")
+        }
+    }
+
+    func toggleRepeat() {
+        audio.toggleRepeat()
+        print("🔁 Repeat \(audio.isRepeatEnabled ? "activado" : "desactivado")")
     }
     func seek(to seconds: Double) {
 
@@ -397,11 +553,18 @@ extension GroupDetailViewModel {
             pause(track)
         } else {
             // Si la música terminó, reiniciar al principio
-            if duration > 0 && localCurrentTime >= duration - 0.5 {
-                print("🔄 Música terminada, reiniciando al principio")
+            let hasFinished = duration > 0 && (localCurrentTime >= duration - 1.0 || audio.currentTime >= duration - 1.0)
+            if hasFinished {
+                print("🔄 Música terminada, reiniciando al principio (local=\(String(format: "%.2f", localCurrentTime)), duration=\(String(format: "%.2f", duration)))")
                 localCurrentTime = 0
                 group?.currentTimeMs = 0
                 audio.seek(to: 0)
+                // Pequeña pausa para asegurar que el seek se complete
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 segundos
+                    self.startPlaying(track)
+                }
+                return
             }
             startPlaying(track)
         }

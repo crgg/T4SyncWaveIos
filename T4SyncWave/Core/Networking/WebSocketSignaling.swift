@@ -149,12 +149,24 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         guard
             let data = text.data(using: .utf8),
             let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else { return }
+        else { 
+            print("❌ Error parsing JSON from WS message")
+            return 
+        }
         
         // Reset reconnect attempts on successful message
         reconnectAttempts = 0
         
-        print("📩 send to webrtc")
+        // Log specific message types
+        if let type = json["type"] as? String {
+            print("📩 WS tipo: \(type)")
+            if type == "playback-state" {
+                let isPlaying = json["isPlaying"] as? Bool ?? false
+                let position = json["position"] as? Double ?? 0
+                print("🎵 PLAYBACK-STATE recibido: isPlaying=\(isPlaying), position=\(position)")
+            }
+        }
+        
         WebRTCManager.shared.handleSignaling(json)
     }
     

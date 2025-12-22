@@ -165,6 +165,11 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         isPlaying = false
         updatePlaybackRate(0.0)
     }
+    
+    /// Set volume (0.0 = muted, 1.0 = full volume)
+    func setVolume(_ volume: Float) {
+        player?.volume = volume
+    }
 
     // MARK: - Seek
     func seek(to time: Double) {

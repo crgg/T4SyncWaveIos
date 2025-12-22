@@ -11,6 +11,7 @@ struct AddMemberView: View {
     @EnvironmentObject var vm : GroupDetailViewModel
     @Environment(\.dismiss) var dismiss
     
+    private let maxEmailLength = 100
     
     @State private var email = ""
     @State private var localError: String?
@@ -21,32 +22,60 @@ struct AddMemberView: View {
     private var isValidEmail: Bool {
         let trimmed = email.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return false }
+        guard trimmed.count <= maxEmailLength else { return false }
         let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
         return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: trimmed)
     }
     
+    // Email excede longitud máxima
+    private var isEmailTooLong: Bool {
+        email.count > maxEmailLength
+    }
+    
     // Mostrar error solo si hay texto y no es válido
     private var shouldShowEmailError: Bool {
-        !email.trimmingCharacters(in: .whitespaces).isEmpty && !isValidEmail
+        let trimmed = email.trimmingCharacters(in: .whitespaces)
+        return !trimmed.isEmpty && !isValidEmail && !isEmailTooLong
     }
     
     var body: some View {
         NavigationStack {
             Form {
-                TextField("User email", text: $email)
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                    .onChange(of: email) { _, _ in
-                        // Limpiar errores al escribir
-                        localError = nil
-                        vm.error = nil
+                Section {
+                    TextField("User email", text: $email)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .onChange(of: email) { _, newValue in
+                            // Limitar longitud
+                            if newValue.count > maxEmailLength {
+                                email = String(newValue.prefix(maxEmailLength))
+                            }
+                            // Limpiar errores al escribir
+                            localError = nil
+                            vm.error = nil
+                        }
+                    
+                    // Contador de caracteres
+                    HStack {
+                        Spacer()
+                        Text("\(email.count)/\(maxEmailLength)")
+                            .font(.caption2)
+                            .foregroundColor(email.count >= maxEmailLength - 10 ? .orange : .secondary)
                     }
+                }
                 
                 // Error de formato de email
                 if shouldShowEmailError {
                     Text("Invalid email format")
                         .foregroundColor(.orange)
+                        .font(.caption)
+                }
+                
+                // Error de longitud
+                if isEmailTooLong {
+                    Text("Email too long (max \(maxEmailLength) characters)")
+                        .foregroundColor(.red)
                         .font(.caption)
                 }
                 

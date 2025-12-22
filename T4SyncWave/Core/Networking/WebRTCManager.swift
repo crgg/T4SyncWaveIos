@@ -19,6 +19,16 @@ protocol WebRTCRoleDelegate: AnyObject {
 protocol WebRTCMemberPresenceDelegate: AnyObject {
     func didMemberJoin(userId: String, userName: String, room: String)
     func didMemberLeave(userId: String, userName: String, room: String)
+    func didReceiveRoomUsers(_ users: [RoomUser], room: String)
+}
+
+// User in room from "room-users" message
+struct RoomUser: Codable {
+    let peerId: String
+    let userName: String
+    let role: String
+    let isHost: Bool
+    let joinedAt: String
 }
 final class WebRTCManager: NSObject, ObservableObject {
     weak var roleDelegate: WebRTCRoleDelegate?
@@ -113,10 +123,13 @@ final class WebRTCManager: NSObject, ObservableObject {
                 let data = try JSONSerialization.data(withJSONObject: msg)
                 let playback = try JSONDecoder().decode(PlaybackMessage.self, from: data)
 
-                print("🎵 PlaybackMessage decodificado OK")
+                print("🎵 PlaybackMessage: isPlaying=\(playback.isPlaying), position=\(playback.position ?? 0), room=\(playback.room ?? "nil")")
+
+                // Use room from message or fallback to current room from WebRTC
+                let roomId = playback.room ?? (lastJoinSend?.room ?? "")
 
                 let state = PlaybackState(
-                    roomId: playback.room,
+                    roomId: roomId,
                     trackUrl: playback.trackUrl,
                     position: playback.position ?? 0,
                     isPlaying: playback.isPlaying,
@@ -127,6 +140,8 @@ final class WebRTCManager: NSObject, ObservableObject {
 
             } catch {
                 print("❌ Error decodificando PlaybackMessage:", error)
+                // Log the raw message for debugging
+                print("📩 Raw playback-state message:", msg)
             }
 
         case "role":
@@ -135,6 +150,31 @@ final class WebRTCManager: NSObject, ObservableObject {
                         self.roleDelegate?.didReceiveRole(role)
                     }
                 }
+            
+        case "welcome":
+            // Server welcome message with peerId and role
+            let role = msg["role"] as? String ?? ""
+            let isHost = msg["isHost"] as? Bool ?? false
+            print("👋 Welcome: role=\(role), isHost=\(isHost)")
+            DispatchQueue.main.async {
+                self.roleDelegate?.didReceiveRole(role)
+            }
+            
+        case "room-users":
+            // List of all users in the room
+            if let room = msg["room"] as? String,
+               let usersArray = msg["users"] as? [[String: Any]] {
+                do {
+                    let data = try JSONSerialization.data(withJSONObject: usersArray)
+                    let users = try JSONDecoder().decode([RoomUser].self, from: data)
+                    print("👥 Room users: \(users.count) usuarios en sala")
+                    DispatchQueue.main.async {
+                        self.presenceDelegate?.didReceiveRoomUsers(users, room: room)
+                    }
+                } catch {
+                    print("❌ Error parsing room-users:", error)
+                }
+            }
             
         case "joined":
             // Un usuario se unió a la sala

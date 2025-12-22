@@ -61,7 +61,8 @@ struct GroupDetailView: View {
                     duration: vm.duration,
                     isSeekEnabled: !vm.isListener,
                     isRepeatEnabled: vm.audio.isRepeatEnabled,
-                    isListener: vm.isListener, // Listener can't add music
+                    isListener: vm.isListener,
+                    isMuted: vm.isMuted,
                     onAddMusic: { showLibrary = true },
                     onPlayPause: {
                         vm.togglePlayPause()
@@ -77,9 +78,12 @@ struct GroupDetailView: View {
                     },
                     onToggleRepeat: {
                         vm.audio.toggleRepeat()
+                    },
+                    onToggleMute: {
+                        vm.toggleMute()
                     }
                 )
-                .listRowInsets(EdgeInsets()) // Sin márgenes de celda
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                 .listRowBackground(Color.clear)
             }
             .listRowSeparator(.hidden)
@@ -122,7 +126,13 @@ struct GroupDetailView: View {
                 }
             }
         }
-        .navigationTitle(group.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text(group.name)
+                    .font(.headline)
+            }
+        }
         .sheet(isPresented: $showLibrary, onDismiss: {
             // Recargar grupo cuando se cierre la biblioteca (por si se añadió canción)
             Task {

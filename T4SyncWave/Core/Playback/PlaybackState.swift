@@ -28,11 +28,11 @@ struct PlaybackState: Codable {
  {"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766115629}*/
 struct PlaybackMessage: Codable {
     let type: String
-    let room: String
-    let userName: String
+    let room: String?
+    let userName: String?
     let position: Double?
     let isPlaying: Bool
     let timestamp: Int
     let trackUrl : String
-    
+
 }
