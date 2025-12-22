@@ -271,4 +271,32 @@ struct GroupDetail: Decodable {
     }
 }
 
+// Room State models for WebRTC synchronization
+struct RoomStateResponse: Decodable {
+    let status: Bool
+    let room: String
+    let playbackState: RoomStatePlayback
+    let members: [RoomStateMember]
+    let memberCount: Int
+    let hostUserId: String
+}
+
+struct RoomStatePlayback: Decodable {
+    let trackUrl: String?
+    let position: Double
+    let isPlaying: Bool
+    let timestamp: Int
+    let duration: Double?
+}
+
+struct RoomStateMember: Decodable {
+    let odooUserId: String
+    let odooName: String
+    let peerId: String
+    let userName: String
+    let role: String
+    let isHost: Bool
+    let joinedAt: String
+}
+
  

@@ -108,7 +108,15 @@ extension GroupService {
             endpoint: "/api/groups/get/\(id)",
             requiredAuth: true
         )
-        
-       
+
+
+    }
+
+    func getRoomState(roomId: String) async throws -> RoomStateResponse {
+        try await APICore.shared.request(
+            baseURL: baseURL,
+            endpoint: "/api/room-state/\(roomId)",
+            requiredAuth: true
+        )
     }
 }

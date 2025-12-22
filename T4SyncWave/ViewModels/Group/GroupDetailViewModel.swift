@@ -399,8 +399,11 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         // When we receive our role, we are connected, mark ourselves as online
         markCurrentUserOnline()
 
-        // Si somos listener, programar una solicitud de estado de playback por si no llega automáticamente
+        // Si somos listener, obtener estado inicial y programar solicitud de estado de playback
         if isListener {
+            Task {
+                await fetchInitialRoomState()
+            }
             schedulePlaybackStateRequest()
         }
     }
@@ -764,6 +767,35 @@ extension GroupDetailViewModel {
 
         print("🎤 DJ respondiendo a solicitud de estado de playback")
         broadcastPlayback()
+    }
+
+    // MARK: - Room State Synchronization
+
+    func fetchInitialRoomState() async {
+        guard isListener, let groupId = group?.id else {
+            print("⚠️ fetchInitialRoomState: Solo listeners pueden obtener estado inicial")
+            return
+        }
+
+        do {
+            let roomState = try await GroupService.shared.getRoomState(roomId: groupId)
+            print("📡 Estado inicial de sala obtenido: \(roomState.members.count) miembros")
+
+            // Actualizar miembros online basados en el estado de la sala
+            let onlineUserIds = Set(roomState.members.map { $0.odooUserId })
+            onlineMembers = onlineUserIds
+
+            // Si hay estado de reproducción, sincronizar
+            if let playback = roomState.playbackState.trackUrl {
+                // Hay música reproduciéndose, el listener se sincronizará vía WebSocket
+                print("🎵 Sala tiene música reproduciéndose, esperando sincronización WebSocket")
+            } else {
+                print("🎵 Sala sin música activa")
+            }
+
+        } catch {
+            print("❌ Error obteniendo estado inicial de sala: \(error)")
+        }
     }
 
     //{"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766118083}
