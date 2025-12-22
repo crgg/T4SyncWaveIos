@@ -280,8 +280,13 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
         print("📥 Playback recibido:", state)
 
         if selectedTrack?.file_url != state.trackUrl {
-            let url = URL(string: state.trackUrl)!
-            audio.loadRemote(url: url, title: "Remote")
+            if let trackUrl = state.trackUrl, let url = URL(string: trackUrl) {
+                audio.loadRemote(url: url, title: "Remote")
+            } else {
+                print("🎵 No hay track para cargar (trackUrl es nil)")
+                audio.pause()
+                selectedTrack = nil
+            }
         }
         
         let diff = abs(audio.currentTime - state.position)

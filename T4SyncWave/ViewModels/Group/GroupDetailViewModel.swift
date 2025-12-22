@@ -287,9 +287,15 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
  
         // Cargar track si cambió
         if selectedTrack?.fileURL.absoluteString != state.trackUrl {
-            print("🎵 Cargando nuevo track: \(state.trackUrl)")
-            let url = URL(string: state.trackUrl)!
-            audio.loadRemote(url: url, title: "Remote")
+            if let trackUrl = state.trackUrl, let url = URL(string: trackUrl) {
+                print("🎵 Cargando nuevo track: \(trackUrl)")
+                audio.loadRemote(url: url, title: "Remote")
+            } else {
+                print("🎵 No hay track para cargar (trackUrl es nil)")
+                // Si no hay track, detener reproducción
+                audio.pause()
+                selectedTrack = nil
+            }
 
             // Actualizar selectedTrack y duration desde el grupo
             if let track = g.currentTrack {
@@ -745,6 +751,19 @@ extension GroupDetailViewModel {
     private func stopPlaybackStateRequestTimer() {
         playbackStateRequestTimer?.invalidate()
         playbackStateRequestTimer = nil
+    }
+
+    // MARK: - WebRTCPlaybackDelegate
+
+    func didReceivePlaybackStateRequest() {
+        // Responder con el estado actual de reproducción si somos DJ
+        guard !isListener else {
+            print("🎧 Listener recibió request-playback-state, ignorando (solo DJ responde)")
+            return
+        }
+
+        print("🎤 DJ respondiendo a solicitud de estado de playback")
+        broadcastPlayback()
     }
 
     //{"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766118083}

@@ -130,8 +130,12 @@ final class PlayerViewModel: ObservableObject,
         
         // 🔑 Cargar MP3 remoto ANTES de play
         if audio.currentURL?.absoluteString != state.trackUrl {
-            let url = URL(string: state.trackUrl)!
-            audio.loadRemote(url: url, title: "remote")
+            if let trackUrl = state.trackUrl, let url = URL(string: trackUrl) {
+                audio.loadRemote(url: url, title: "remote")
+            } else {
+                print("🎵 No hay track para cargar (trackUrl es nil)")
+                audio.pause()
+            }
         }
 
 //        let localTime = audio.syncTime()

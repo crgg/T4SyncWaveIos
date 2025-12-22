@@ -15,7 +15,7 @@ import Foundation
 //}
 struct PlaybackState: Codable {
     let roomId: String
-    let trackUrl : String
+    let trackUrl: String?
     let position: Double
     let isPlaying: Bool
     let timestamp: Int
@@ -33,6 +33,8 @@ struct PlaybackMessage: Codable {
     let position: Double?
     let isPlaying: Bool
     let timestamp: Int
-    let trackUrl : String
-    
+    let trackUrl: String?
+    let duration: Double?
+    let requestedBy: String?
+
 }
