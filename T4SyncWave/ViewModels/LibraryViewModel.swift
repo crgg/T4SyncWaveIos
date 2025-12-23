@@ -66,7 +66,7 @@ final class LibraryViewModel: NSObject,  ObservableObject, WebRTCPlaybackDelegat
              */
           
             
-            self.joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: current_user.role ?? "member" )
+            self.joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: current_user.role ?? "member" , trackUrl: groupModel.currentTrack?.fileURL.absoluteString)
             
             
             // Connect signaling

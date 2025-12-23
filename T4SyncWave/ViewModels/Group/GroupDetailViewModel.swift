@@ -44,6 +44,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     private var playbackStateRequestTimer: Timer?  // Timer para reintentar solicitud de estado
     private var lastSyncLogTime: TimeInterval = 0  // Para throttling de logs de sincronización
     private var lastPlaybackStateTime: TimeInterval = 0  // Para throttling de cambios de estado
+    private var isInitialized = false  // Para evitar múltiples inicializaciones
     var isListener : Bool = false
     @Published var localCurrentTime: Double = 0
     @Published var duration: Double = 0
@@ -450,12 +451,18 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 
 extension GroupDetailViewModel {
     func initalConnction(_ groupModel : GroupDetail) {
+        // Evitar múltiples inicializaciones
+        guard !isInitialized else {
+            print("⚠️ Conexión ya inicializada, ignorando")
+            return
+        }
+
         guard let current_user = SessionStore.shared.loadUser() else {
-            
+
             fatalError("No user")
         }
         
-        let joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: isListener ? "member" : "dj" )
+        let joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: isListener ? "member" : "dj" ,  trackUrl: group?.currentTrack?.fileURL.absoluteString)
 
         print("🎯 INICIANDO CONEXIÓN AL GRUPO: room=\(groupModel.id), user=\(current_user.name), role=\(isListener ? "member" : "dj")")
 
@@ -470,7 +477,10 @@ extension GroupDetailViewModel {
                 duration = Double(selectedTrack.durationMs) / 1000
             }
         }
-        
+
+        // Marcar como inicializado
+        isInitialized = true
+        print("✅ Conexión al grupo inicializada correctamente")
     }
     func togglePlayPause() {
         

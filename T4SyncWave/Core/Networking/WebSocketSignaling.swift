@@ -135,15 +135,9 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         manualDisconnect = true
         stopPingTimer()
         stopReconnectTimer()
-
-        // Cambiar estado antes de cancelar para evitar callbacks
-        connectionState = .disconnected
-
         socket?.cancel(with: .goingAway, reason: nil)
         socket = nil
-
-        // Reset de intentos de reconexión para evitar reconexiones futuras
-        reconnectAttempts = 0
+        connectionState = .disconnected
     }
     
     /// Verificar si está conectado
@@ -164,41 +158,31 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
             if let error = error {
                 print("❌ WS send error:", error)
                 print("🐛 DEBUG: Error de envío, llamando handleConnectionError")
-                self?.handleConnectionError()
+                 
+                if self?.manualDisconnect == false {
+                    self?.handleConnectionError()
+                }
             }
         }
     }
 
     private func listen() {
-        // No continuar escuchando si hay una desconexión manual
-        if manualDisconnect {
-            print("🔌 Listener detenido - desconexión manual en progreso")
-            return
-        }
-
         socket?.receive { [weak self] result in
             switch result {
             case .success(let message):
                 self?.handle(message)
-                // Solo continuar escuchando si no hay desconexión manual
-                if !(self?.manualDisconnect ?? false) {
-                    self?.listen()
-                }
+                self?.listen()
             case .failure(let error):
                 print("❌ WS receive error:", error)
                 print("🐛 DEBUG: Error de recepción en listen(), llamando handleConnectionError")
-                self?.handleConnectionError()
+                if self?.manualDisconnect == false {
+                    self?.handleConnectionError()
+                }
             }
         }
     }
 
     private func handle(_ message: URLSessionWebSocketTask.Message) {
-        // Ignorar mensajes si hay una desconexión manual en progreso
-        if manualDisconnect {
-            print("🔌 Mensaje ignorado - desconexión manual en progreso")
-            return
-        }
-
         guard case .string(let text) = message else { return }
 
            print("📩 WS recibido:", text)
@@ -206,11 +190,11 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
            guard
                let data = text.data(using: .utf8),
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
-        else {
+        else { 
             print("❌ Error parsing JSON from WS message")
-            return
+            return 
         }
-
+        
         // Reset reconnect attempts on successful message
         reconnectAttempts = 0
         
@@ -236,9 +220,10 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     private func handleConnectionError() {
         guard connectionState != .reconnecting else { return }
 
-        // No reconectar si fue una desconexión manual O si ya estamos desconectados
-        if manualDisconnect || connectionState == .disconnected {
-            print("🔌 Error de conexión ignorado - desconexión manual o ya desconectado")
+        // No reconectar si fue una desconexión manual
+        if manualDisconnect {
+            print("🔌 Desconexión manual detectada - no reconectar")
+            manualDisconnect = false  // Reset para futuras conexiones
             return
         }
 
@@ -331,7 +316,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         // No reconectar si fue una desconexión manual
         if manualDisconnect {
             print("🔌 Cierre por desconexión manual - no reconectar")
-            manualDisconnect = false  // Reset para futuras conexiones
+//            manualDisconnect = false  // Reset para futuras conexiones
             DispatchQueue.main.async {
                 self.connectionState = .disconnected
             }
