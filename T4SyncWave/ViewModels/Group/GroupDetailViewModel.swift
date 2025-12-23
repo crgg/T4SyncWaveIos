@@ -123,9 +123,6 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         // Si estaba reproduciendo, reiniciar el timer
         if isPlaying {
             startUITimer()
-            if !isListener {
-                startSyncTimer()
-            }
         }
     }
     // Charge all groups
@@ -918,7 +915,6 @@ extension GroupDetailViewModel {
         print("👋 Desconectando del grupo...")
 
         // Detener todos los timers
-        stopSyncTimer()
         stopUITimer()
         stopPlaybackStateRequestTimer()
 
