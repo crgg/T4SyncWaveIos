@@ -304,7 +304,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     // MARK: - WebRTCMemberPresenceDelegate
     
     func didMemberJoin(userId: String, userName: String, room: String) {
-        guard room == groupId else { return }
+        guard room.lowercased() == groupId.lowercased() else { return }
         guard userId != currentUserId else {
             // Current user joined, mark as online
             markCurrentUserOnline()
@@ -325,7 +325,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     }
     
     func didMemberLeave(userId: String, userName: String, room: String) {
-        guard room == groupId else { return }
+        guard room.lowercased() == groupId.lowercased() else { return }
         guard userId != currentUserId else { return }
         
         print("❌ Miembro desconectado: \(userName) (\(userId))")
@@ -337,7 +337,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didReceiveRoomUsers(_ users: [RoomUser], room: String) {
         do {
-            guard room == groupId else {
+            guard room.lowercased() == groupId.lowercased() else {
                 print("🐛 DEBUG: didReceiveRoomUsers ignorado - room mismatch: \(room) vs \(groupId)")
                 return
             }
@@ -659,7 +659,8 @@ extension GroupDetailViewModel {
 
         // Calcular posición ajustada considerando el tiempo de viaje del mensaje
         let currentTime = Date().timeIntervalSince1970
-        let messageAge = currentTime - Double(state.timestamp)
+        let messageTime = Double(state.timestamp) / 1000.0  // Convertir de ms a segundos
+        let messageAge = currentTime - messageTime
         let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
 
         print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
