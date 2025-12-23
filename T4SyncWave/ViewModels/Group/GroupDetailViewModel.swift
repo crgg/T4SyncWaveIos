@@ -751,8 +751,8 @@ extension GroupDetailViewModel {
         }
 
         // Evitar cambios de estado muy frecuentes (spam del DJ)
-        let currentTime = Date().timeIntervalSince1970
-        let timeSinceLastStateChange = currentTime - lastPlaybackStateTime
+        let now = Date().timeIntervalSince1970
+        let timeSinceLastStateChange = now - lastPlaybackStateTime
 
         // Si el cambio ocurrió hace menos de 0.5 segundos, ignorar para evitar spam
         if timeSinceLastStateChange < 0.5 {
@@ -765,7 +765,7 @@ extension GroupDetailViewModel {
         if state.isPlaying {
             if !wasPlaying {
                 print("▶️ Iniciando reproducción (comando del DJ)")
-                lastPlaybackStateTime = currentTime
+                lastPlaybackStateTime = now
             }
             audio.play()
             isPlaying = true
@@ -774,7 +774,7 @@ extension GroupDetailViewModel {
         } else {
             if wasPlaying {
                 print("⏸️ Pausando reproducción (comando del DJ)")
-                lastPlaybackStateTime = currentTime
+                lastPlaybackStateTime = now
             }
             audio.pause()
             isPlaying = false

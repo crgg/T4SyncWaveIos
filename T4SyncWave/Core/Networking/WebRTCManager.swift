@@ -124,6 +124,11 @@ final class WebRTCManager: NSObject, ObservableObject {
         }
 
         do {
+            // Log específico para eventos de join/leave
+            if type == "user-joined" || type == "joined" || type == "user-left" || type == "left" {
+                print("🔄 Evento de presencia recibido: \(type) - \(msg)")
+            }
+
             switch type {
         case "offer":
             let sdp = RTCSessionDescription(
@@ -243,12 +248,27 @@ final class WebRTCManager: NSObject, ObservableObject {
                 print("⚠️ room-users message missing required fields")
             }
             
+        case "user-joined":
+            // Evento completo de usuario que se unió (con objeto user anidado)
+            let room = msg["room"] as? String ?? ""
+            if let userObj = msg["user"] as? [String: Any] {
+                let userId = userObj["odooUserId"] as? String ?? userObj["userId"] as? String ?? ""
+                let userName = userObj["userName"] as? String ?? userObj["odooName"] as? String ?? ""
+                let onlineCount = msg["onlineCount"] as? Int ?? 0
+                print("👥 Usuario conectado (completo): \(userName) (\(userId)) en sala \(room), online: \(onlineCount)")
+                DispatchQueue.main.async {
+                    self.presenceDelegate?.didMemberJoin(userId: userId, userName: userName, room: room)
+                }
+            } else {
+                print("⚠️ user-joined sin objeto user válido")
+            }
+
         case "joined":
-            // Un usuario se unió a la sala
+            // Evento simplificado de compatibilidad
             let userId = msg["userId"] as? String ?? ""
             let userName = msg["userName"] as? String ?? ""
             let room = msg["room"] as? String ?? ""
-            print("👤 Usuario conectado: \(userName) en sala \(room)")
+            print("👤 Usuario conectado (simplificado): \(userName) en sala \(room)")
             DispatchQueue.main.async {
                 self.presenceDelegate?.didMemberJoin(userId: userId, userName: userName, room: room)
             }
