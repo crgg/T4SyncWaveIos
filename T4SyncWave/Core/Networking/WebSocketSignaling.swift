@@ -67,13 +67,15 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         socket = session.webSocketTask(with: url)
         socket?.resume()
         
-        send([
+        let joinMessage = [
             "type": joinSend.type,
             "room": joinSend.room,
             "userId": joinSend.userId,
             "userName": joinSend.UserName,
             "role": joinSend.role
-        ])
+        ]
+        print("📤 ENVIANDO JOIN: \(joinMessage)")
+        send(joinMessage)
 
         listen()
         startPingTimer()

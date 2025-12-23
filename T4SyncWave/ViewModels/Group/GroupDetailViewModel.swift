@@ -456,10 +456,12 @@ extension GroupDetailViewModel {
         }
         
         let joinSend = JoinSend(type: "join", room: groupModel.id, userId: current_user.id, UserName: current_user.name, role: isListener ? "member" : "dj" )
-        
+
+        print("🎯 INICIANDO CONEXIÓN AL GRUPO: room=\(groupModel.id), user=\(current_user.name), role=\(isListener ? "member" : "dj")")
+
         // Guardar para reconexión
         self.lastJoinSend = joinSend
-        
+
         WebSocketSignaling.shared.connect(joinSend: joinSend)
         if isListener {
             selectedTrack = groupModel.currentTrack
