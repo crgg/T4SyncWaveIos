@@ -172,6 +172,10 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
                 let position = json["position"] as? Double ?? 0
                 print("🎵 PLAYBACK-STATE recibido: isPlaying=\(isPlaying), position=\(position)")
             }
+            // Log presence events
+            if type == "user-joined" || type == "joined" || type == "user-left" || type == "left" {
+                print("👥 WS PRESENCE EVENT: \(type) - \(json)")
+            }
         }
         
            WebRTCManager.shared.handleSignaling(json)

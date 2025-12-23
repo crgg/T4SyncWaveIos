@@ -123,6 +123,9 @@ final class WebRTCManager: NSObject, ObservableObject {
             return
         }
 
+        // Log ALL messages for debugging
+        print("📨 WebRTC handleSignaling recibió: \(type) - msg: \(msg)")
+
         do {
             // Log específico para eventos de join/leave
             if type == "user-joined" || type == "joined" || type == "user-left" || type == "left" {
