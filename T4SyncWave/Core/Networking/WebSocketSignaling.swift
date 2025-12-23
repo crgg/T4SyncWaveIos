@@ -128,6 +128,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         socket?.send(.string(text)) { [weak self] error in
             if let error = error {
                 print("❌ WS send error:", error)
+                print("🐛 DEBUG: Error de envío, llamando handleConnectionError")
                 self?.handleConnectionError()
             }
         }
@@ -141,6 +142,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
                 self?.listen()
             case .failure(let error):
                 print("❌ WS receive error:", error)
+                print("🐛 DEBUG: Error de recepción en listen(), llamando handleConnectionError")
                 self?.handleConnectionError()
             }
         }
@@ -179,7 +181,10 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     
     private func handleConnectionError() {
         guard connectionState != .reconnecting else { return }
-        
+
+        print("🐛 DEBUG: handleConnectionError() llamado desde: \(Thread.callStackSymbols[1])")
+        print("🐛 DEBUG: Estado actual antes del error: \(connectionState)")
+
         connectionState = .disconnected
         scheduleReconnect()
     }
@@ -189,15 +194,16 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
             print("❌ Máximo de intentos de reconexión alcanzado")
             return
         }
-        
+
         stopReconnectTimer()
-        
+
         // Backoff exponencial: 1s, 2s, 4s, 8s, 16s
         let delay = pow(2.0, Double(reconnectAttempts))
         reconnectAttempts += 1
-        
+
         print("⏰ Reconexión programada en \(delay) segundos...")
-        
+        print("🐛 DEBUG: scheduleReconnect() llamado desde: \(Thread.callStackSymbols[1])")
+
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
             self?.reconnect()
         }
@@ -261,6 +267,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("🔴 WebSocket didClose: \(closeCode)")
+        print("🐛 DEBUG: didCloseWith llamado con closeCode: \(closeCode.rawValue)")
         DispatchQueue.main.async {
             self.connectionState = .disconnected
             self.scheduleReconnect()

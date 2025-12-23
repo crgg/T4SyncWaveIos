@@ -337,10 +337,14 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didReceiveRoomUsers(_ users: [RoomUser], room: String) {
         do {
-            guard room == groupId else { return }
+            guard room == groupId else {
+                print("🐛 DEBUG: didReceiveRoomUsers ignorado - room mismatch: \(room) vs \(groupId)")
+                return
+            }
 
             print("👥 Usuarios en sala (\(users.count)): \(users.map { "\($0.userName) (\($0.role))" })")
             print("👥 Miembros del grupo: \(group?.members.map { "\($0.name) (id:\($0.id))" } ?? [])")
+            print("🐛 DEBUG: Iniciando procesamiento de room-users")
 
             // Update online members based on room users
             for user in users {
@@ -355,10 +359,12 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
                 }
             }
 
+            print("🐛 DEBUG: Llamando markCurrentUserOnline()")
             // Always mark current user as online if we're in this room
             markCurrentUserOnline()
 
             print("👥 onlineMembers actualizado: \(onlineMembers)")
+            print("🐛 DEBUG: didReceiveRoomUsers completado exitosamente")
         } catch {
             print("❌ Error procesando didReceiveRoomUsers: \(error)")
         }
