@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import UIKit
+import WebRTC
 
 @MainActor
 final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebRTCRoleDelegate, WebRTCMemberPresenceDelegate {
@@ -39,7 +40,6 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         
     let audio = AudioPlayerManager.shared
     let rtc = WebRTCManager.shared
-    private var syncTimer: Timer?
     private var uiTimer: Timer?     // UI
     private var playbackStateRequestTimer: Timer?  // Timer para reintentar solicitud de estado
     private var lastSyncLogTime: TimeInterval = 0  // Para throttling de logs de sincronización
@@ -304,15 +304,21 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     func didMemberJoin(userId: String, userName: String, room: String) {
         guard room == groupId else { return }
-        guard userId != currentUserId else { 
+        guard userId != currentUserId else {
             // Current user joined, mark as online
             markCurrentUserOnline()
-            return 
+            return
         }
-        
+
         print("✅ Miembro conectado: \(userName) (\(userId))")
         onlineMembers.insert(userId)
-        
+
+        // Si somos DJ, enviar el estado actual al nuevo miembro
+        if !isListener {
+            print("📤 Enviando estado actual al nuevo miembro \(userName)")
+            broadcastPlayback()
+        }
+
         // Show toast
         showToast("\(userName) joined")
     }
@@ -426,7 +432,6 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     deinit {
         // Limpiar timers al destruir el ViewModel
-        syncTimer?.invalidate()
         uiTimer?.invalidate()
     }
 }
@@ -488,7 +493,6 @@ extension GroupDetailViewModel {
         isPlaying = false
         
         stopUITimer()
-        stopSyncTimer()
         broadcastPlayback()
     }
     
@@ -503,7 +507,6 @@ extension GroupDetailViewModel {
         duration = Double(track.durationMs) / 1000  // 👈 actualizar duración
         
         audio.play()                 // 👈 async
-        startSyncTimer()
         broadcastPlayback()
         startUITimer()
         
@@ -541,30 +544,8 @@ extension GroupDetailViewModel {
         isPlaying = false
         localCurrentTime = 0
         stopUITimer()
-        stopSyncTimer()
         //        selectedTrack = nil
         broadcastPlayback()
-    }
-    private func startSyncTimer() {
-        stopSyncTimer()
-        
-        // Crear timer y añadirlo al RunLoop principal explícitamente
-        let timer = Timer(timeInterval: 1.5, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self,
-                      self.audio.isReadyToPlay,
-                      self.audio.isPlaying else { return }
-                
-                self.broadcastPlayback()
-            }
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        syncTimer = timer
-    }
-    
-    private func stopSyncTimer() {
-        syncTimer?.invalidate()
-        syncTimer = nil
     }
     
     private func startUITimer() {
@@ -640,8 +621,11 @@ extension GroupDetailViewModel {
             print("⏭️ Ignorando playback (soy DJ)")
             return
         }
+        
 
         guard let g = self.group else { return }
+        
+        
 
         // Cargar track si cambió
         if selectedTrack?.fileURL.absoluteString != state.trackUrl {
@@ -927,5 +911,36 @@ extension GroupDetailViewModel {
     }
 
     //{"type":"playback-state","trackUrl":"https://go2storage.s3.us-east-2.amazonaws.com/audio/df6bd099-f188-4cae-8265-b88ab99497f8.mp3","position":0,"isPlaying":true,"timestamp":1766118083}
+
+    // MARK: - Cleanup and Disconnect
+
+    func disconnectFromGroup() {
+        print("👋 Desconectando del grupo...")
+
+        // Detener todos los timers
+        stopSyncTimer()
+        stopUITimer()
+        stopPlaybackStateRequestTimer()
+
+        // Detener audio
+        audio.pause()
+        audio.seek(to: 0)
+
+        // Limpiar estado
+        selectedTrack = nil
+        isPlaying = false
+        localCurrentTime = 0
+        duration = 0
+
+        // Limpiar miembros online
+        onlineMembers.removeAll()
+
+        // Cerrar conexión WebSocket para que el servidor reciba el evento 'close'
+        print("🔌 Cerrando conexión WebSocket para el grupo - el servidor manejará automáticamente la salida")
+        // El evento 'close' se envía automáticamente cuando se desconecta el WebSocket
+        WebRTCManager.disconnect()
+
+        print("✅ Desconexión del grupo completada")
+    }
 }
 

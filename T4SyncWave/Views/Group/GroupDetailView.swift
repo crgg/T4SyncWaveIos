@@ -48,6 +48,10 @@ struct GroupDetailView: View {
             // load the group
             await vm.load()
         }
+        .onDisappear {
+            // Desconectar cuando la vista desaparece
+            vm.disconnectFromGroup()
+        }
     }
     
     private func content(_ group: GroupDetail) -> some View {
