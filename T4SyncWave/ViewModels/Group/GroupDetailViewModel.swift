@@ -43,6 +43,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     private var uiTimer: Timer?     // UI
     private var playbackStateRequestTimer: Timer?  // Timer para reintentar solicitud de estado
     private var lastSyncLogTime: TimeInterval = 0  // Para throttling de logs de sincronización
+    private var lastPlaybackStateTime: TimeInterval = 0  // Para throttling de cambios de estado
     var isListener : Bool = false
     @Published var localCurrentTime: Double = 0
     @Published var duration: Double = 0
@@ -749,11 +750,22 @@ extension GroupDetailViewModel {
             }
         }
 
+        // Evitar cambios de estado muy frecuentes (spam del DJ)
+        let currentTime = Date().timeIntervalSince1970
+        let timeSinceLastStateChange = currentTime - lastPlaybackStateTime
+
+        // Si el cambio ocurrió hace menos de 0.5 segundos, ignorar para evitar spam
+        if timeSinceLastStateChange < 0.5 {
+            print("⚡ Cambio de estado muy frecuente (\(String(format: "%.2f", timeSinceLastStateChange))s), ignorando para evitar spam")
+            return
+        }
+
         // Actualizar estado de reproducción
         let wasPlaying = isPlaying
         if state.isPlaying {
             if !wasPlaying {
                 print("▶️ Iniciando reproducción (comando del DJ)")
+                lastPlaybackStateTime = currentTime
             }
             audio.play()
             isPlaying = true
@@ -762,6 +774,7 @@ extension GroupDetailViewModel {
         } else {
             if wasPlaying {
                 print("⏸️ Pausando reproducción (comando del DJ)")
+                lastPlaybackStateTime = currentTime
             }
             audio.pause()
             isPlaying = false
