@@ -659,7 +659,7 @@ extension GroupDetailViewModel {
 
         // Calcular posición ajustada considerando el tiempo de viaje del mensaje
         let currentTime = Date().timeIntervalSince1970
-        let messageTime = Double(state.timestamp) / 1000.0  // Convertir de ms a segundos
+        let messageTime = Double(state.timestamp)  // Ya está en segundos
         let messageAge = currentTime - messageTime
         let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
 
@@ -762,6 +762,12 @@ extension GroupDetailViewModel {
             isPlaying = false
             group?.isPlaying = false
             stopUITimer()
+        }
+
+        // Si somos listener y recibimos un estado válido, detener las solicitudes continuas
+        if isListener {
+            print("✅ Estado de playback recibido correctamente - deteniendo solicitudes automáticas")
+            stopPlaybackStateRequestTimer()
         }
     }
 
