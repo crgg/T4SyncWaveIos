@@ -45,6 +45,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     private var lastSyncLogTime: TimeInterval = 0  // Para throttling de logs de sincronización
     private var lastPlaybackStateTime: TimeInterval = 0  // Para throttling de cambios de estado
     private var isInitialized = false  // Para evitar múltiples inicializaciones
+    private var hasReceivedRoomUsers = false  // Para evitar duplicación en onlineMembers
     var isListener : Bool = false
     @Published var localCurrentTime: Double = 0
     @Published var duration: Double = 0
@@ -272,7 +273,11 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             isListener = (role == "member")
 
             // When we receive our role, we are connected, mark ourselves as online
-            markCurrentUserOnline()
+            // Solo marcar como online aquí si aún no hemos recibido room-users
+            // (room-users también nos marca como online para evitar duplicación)
+            if !hasReceivedRoomUsers {
+                markCurrentUserOnline()
+            }
 
             // Si somos listener, obtener estado inicial y programar solicitud de estado de playback
             if isListener {
@@ -364,6 +369,9 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
             print("🐛 DEBUG: Llamando markCurrentUserOnline()")
             // Always mark current user as online if we're in this room
             markCurrentUserOnline()
+
+            // Marcar que ya hemos recibido room-users para evitar duplicación
+            hasReceivedRoomUsers = true
 
             print("👥 onlineMembers actualizado: \(onlineMembers)")
             print("🐛 DEBUG: didReceiveRoomUsers completado exitosamente")
@@ -973,6 +981,7 @@ extension GroupDetailViewModel {
 
         // Limpiar miembros online
         onlineMembers.removeAll()
+        hasReceivedRoomUsers = false  // Reset para futuras conexiones
 
         // Cerrar conexión WebSocket para que el servidor reciba el evento 'close'
         print("🔌 Cerrando conexión WebSocket para el grupo - el servidor manejará automáticamente la salida")
