@@ -56,6 +56,11 @@ final class WebRTCManager: NSObject, ObservableObject {
     static func getCurrentRoom() -> String? {
         return WebSocketSignaling.shared.currentJoinSend?.room
     }
+
+    /// Disconnect WebSocket connection - triggers 'close' event on server
+    static func disconnect() {
+        WebSocketSignaling.shared.disconnect()
+    }
         private var peerConnection: RTCPeerConnection?
         private var dataChannel: RTCDataChannel?
         private var factory: RTCPeerConnectionFactory!
@@ -113,9 +118,13 @@ final class WebRTCManager: NSObject, ObservableObject {
     }
     func handleSignaling(_ msg: [String: Any]) {
 
-        guard let type = msg["type"] as? String else { return }
+        guard let type = msg["type"] as? String else {
+            print("⚠️ Mensaje sin tipo: \(msg)")
+            return
+        }
 
-        switch type {
+        do {
+            switch type {
         case "offer":
             let sdp = RTCSessionDescription(
                 type: .offer,
@@ -192,35 +201,46 @@ final class WebRTCManager: NSObject, ObservableObject {
             // Server welcome message with peerId and role
             let role = msg["role"] as? String ?? ""
             let isHost = msg["isHost"] as? Bool ?? false
-            print("👋 Welcome: role=\(role), isHost=\(isHost)")
-            DispatchQueue.main.async {
-                self.roleDelegate?.didReceiveRole(role)
-            }
+            let room = msg["room"] as? String ?? ""
+            print("👋 Welcome: role=\(role), isHost=\(isHost), room=\(room)")
 
-            // Si somos listener (member), solicitar estado de playback actual
-            if role == "member" {
-                print("🎧 Listener conectado, solicitando estado de playback")
-                let requestMessage: [String: Any] = [
-                    "type": "request-playback-state",
-                    "roomId": WebSocketSignaling.shared.currentJoinSend?.room ?? ""
-                ]
-                WebSocketSignaling.shared.send(requestMessage)
+            do {
+                DispatchQueue.main.async {
+                    self.roleDelegate?.didReceiveRole(role)
+                }
+
+                // Si somos listener (member), solicitar estado de playback actual
+                if role == "member" {
+                    print("🎧 Listener conectado, solicitando estado de playback")
+                    let requestMessage: [String: Any] = [
+                        "type": "request-playback-state",
+                        "roomId": room
+                    ]
+                    WebSocketSignaling.shared.send(requestMessage)
+                }
+            } catch {
+                print("❌ Error procesando mensaje welcome: \(error)")
+                // No desconectar aquí, solo loggear
             }
             
         case "room-users":
             // List of all users in the room
+            print("📨 Procesando room-users message: \(msg)")
             if let room = msg["room"] as? String,
                let usersArray = msg["users"] as? [[String: Any]] {
                 do {
                     let data = try JSONSerialization.data(withJSONObject: usersArray)
                     let users = try JSONDecoder().decode([RoomUser].self, from: data)
-                    print("👥 Room users: \(users.count) usuarios en sala")
+                    print("👥 Room users parsed successfully: \(users.count) usuarios en sala")
                     DispatchQueue.main.async {
                         self.presenceDelegate?.didReceiveRoomUsers(users, room: room)
                     }
                 } catch {
-                    print("❌ Error parsing room-users:", error)
+                    print("❌ Error parsing room-users JSON: \(error)")
+                    print("📄 Raw users data: \(usersArray)")
                 }
+            } else {
+                print("⚠️ room-users message missing required fields")
             }
             
         case "joined":
@@ -244,7 +264,13 @@ final class WebRTCManager: NSObject, ObservableObject {
                 }
 
         default:
-            break
+            print("⚠️ Tipo de mensaje desconocido:", type)
+        }
+
+        } catch {
+            print("❌ Error fatal procesando mensaje \(type): \(error)")
+            print("📄 Mensaje problemático: \(msg)")
+            // No desconectar aquí para evitar loops, solo loggear el error
         }
     }
 

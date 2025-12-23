@@ -265,19 +265,23 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 
     
     func didReceiveRole(_ role: String) {
-        print("👑 Rol asignado:", role)
-        isListener = (role == "member")
+        do {
+            print("👑 Rol asignado:", role)
+            isListener = (role == "member")
 
-        // When we receive our role, we are connected, mark ourselves as online
-        markCurrentUserOnline()
+            // When we receive our role, we are connected, mark ourselves as online
+            markCurrentUserOnline()
 
-        // Si somos listener, obtener estado inicial y programar solicitud de estado de playback
-        if isListener {
-//            Task {
-//                await fetchInitialRoomState()
-//            }
-            schedulePlaybackStateRequest()
-            
+            // Si somos listener, obtener estado inicial y programar solicitud de estado de playback
+            if isListener {
+//                Task {
+//                    await fetchInitialRoomState()
+//                }
+                schedulePlaybackStateRequest()
+
+            }
+        } catch {
+            print("❌ Error procesando didReceiveRole: \(error)")
         }
     }
     
@@ -332,28 +336,32 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     }
     
     func didReceiveRoomUsers(_ users: [RoomUser], room: String) {
-        guard room == groupId else { return }
-        
-        print("👥 Usuarios en sala (\(users.count)): \(users.map { "\($0.userName) (\($0.role))" })")
-        print("👥 Miembros del grupo: \(group?.members.map { "\($0.name) (id:\($0.id))" } ?? [])")
-        
-        // Update online members based on room users
-        for user in users {
-            // Try to match by userName (case-insensitive)
-            if let member = group?.members.first(where: { 
-                $0.name.lowercased() == user.userName.lowercased() 
-            }) {
-                onlineMembers.insert(member.id)
-                print("✅ Match encontrado: \(user.userName) -> member.id: \(member.id)")
-            } else {
-                print("⚠️ No se encontró match para: \(user.userName)")
+        do {
+            guard room == groupId else { return }
+
+            print("👥 Usuarios en sala (\(users.count)): \(users.map { "\($0.userName) (\($0.role))" })")
+            print("👥 Miembros del grupo: \(group?.members.map { "\($0.name) (id:\($0.id))" } ?? [])")
+
+            // Update online members based on room users
+            for user in users {
+                // Try to match by userName (case-insensitive)
+                if let member = group?.members.first(where: {
+                    $0.name.lowercased() == user.userName.lowercased()
+                }) {
+                    onlineMembers.insert(member.id)
+                    print("✅ Match encontrado: \(user.userName) -> member.id: \(member.id)")
+                } else {
+                    print("⚠️ No se encontró match para: \(user.userName)")
+                }
             }
+
+            // Always mark current user as online if we're in this room
+            markCurrentUserOnline()
+
+            print("👥 onlineMembers actualizado: \(onlineMembers)")
+        } catch {
+            print("❌ Error procesando didReceiveRoomUsers: \(error)")
         }
-        
-        // Always mark current user as online if we're in this room
-        markCurrentUserOnline()
-        
-        print("👥 onlineMembers actualizado: \(onlineMembers)")
     }
     
     /// Show a toast message that auto-dismisses
