@@ -243,9 +243,10 @@ struct GroupTrack: Decodable {
     let email: String
     let role: MemberRole
     let avatarURL: URL?
+    let user_id: String
 
     enum CodingKeys: String, CodingKey {
-        case id, name, email, role
+        case id, name, email, role, user_id
         case avatarURL = "avatar_url"
     }
 }

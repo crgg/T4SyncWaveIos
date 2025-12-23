@@ -97,7 +97,7 @@ struct GroupDetailView: View {
                 Section(header: Text("DJ")) {
                     DJRow(
                         member: dj,
-                        isOnline: vm.onlineMembers.contains(dj.id)
+                        isOnline: vm.onlineMembers.contains(where: { $0.userId ==  dj.user_id })
                     )
                 }
             }
@@ -107,7 +107,8 @@ struct GroupDetailView: View {
                 ForEach(vm.listenerMembers) { member in
                     MemberRow(
                         member: member,
-                        isOnline: vm.onlineMembers.contains(member.id)
+//                        isOnline: vm.onlineMembers.contains(member.id)
+                        isOnline: vm.onlineMembers.contains(where: { $0.userId ==  member.user_id })
                     )
                 }
                 if !isListener {

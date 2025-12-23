@@ -9,6 +9,10 @@ import Foundation
 import Combine
 import UIKit
 import WebRTC
+struct onlineUser {
+    let userId: String
+    let name: String
+}
 
 @MainActor
 final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebRTCRoleDelegate, WebRTCMemberPresenceDelegate {
@@ -21,7 +25,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     @Published var selectedTrack: GroupTrack?
     
     // Track online members by their userId
-    @Published var onlineMembers: Set<String> = []
+    @Published var onlineMembers: [onlineUser] = []
     
     // Toast message when someone joins
     @Published var toastMessage: String?
@@ -173,7 +177,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
                 if let m = response.member {
                     let url = URL(string: m.user.avatarURL ?? "") ?? nil
                     
-                    let nm = GroupMember(id: m.id, name: m.user.name, email: m.user.email, role: .member, avatarURL: url)
+                    let nm = GroupMember(id: m.id, name: m.user.name, email: m.user.email, role: .member, avatarURL: url, user_id: m.user.id)
                      group?.members.insert(nm, at: 0)
                 }
                 return true
@@ -281,9 +285,9 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 
             // Si somos listener, obtener estado inicial y programar solicitud de estado de playback
             if isListener {
-//                Task {
-//                    await fetchInitialRoomState()
-//                }
+                Task {
+                    await fetchInitialRoomState()
+                }
                 schedulePlaybackStateRequest()
 
             }
@@ -296,14 +300,26 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     private func markCurrentUserOnline() {
         // Add current user ID to online members
         if !currentUserId.isEmpty {
-            onlineMembers.insert(currentUserId)
+//            onlineMembers.insert(currentUserId)
             print("✅ Usuario actual marcado como online: \(currentUserId)")
+            if let currentUserName = SessionStore.shared.loadUser()?.name,
+               let member = group?.members.first(where: { $0.name.lowercased() == currentUserName.lowercased() }) {
+//                onlineMembers.insert(member.id)
+                // verificar qwe no exista en el array
+                if !onlineMembers.contains(where: { $0.userId == member.user_id }) {
+                    onlineMembers.append(onlineUser(userId: member.user_id, name: member.name))
+                }
+                print("✅ Miembro actual marcado como online por nombre: \(member.id)")
+            }
         }
         
         // Also try to find by name in member list (match with current user's name)
         if let currentUserName = SessionStore.shared.loadUser()?.name,
            let member = group?.members.first(where: { $0.name.lowercased() == currentUserName.lowercased() }) {
-            onlineMembers.insert(member.id)
+//            onlineMembers.insert(member.id)
+            if !onlineMembers.contains(where: { $0.userId == member.user_id }) {
+                onlineMembers.append(onlineUser(userId: member.user_id, name: member.name))
+            }
             print("✅ Miembro actual marcado como online por nombre: \(member.id)")
         }
     }
@@ -319,7 +335,10 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         }
 
         print("✅ Miembro conectado: \(userName) (\(userId))")
-        onlineMembers.insert(userId)
+//        onlineMembers.insert(userId)
+        if !onlineMembers.contains(where: { $0.userId == userId }) {
+            onlineMembers.append(onlineUser(userId: userId, name: userName))
+        }
 
         // Si somos DJ, enviar el estado actual al nuevo miembro
         if !isListener {
@@ -336,7 +355,9 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         guard userId != currentUserId else { return }
         
         print("❌ Miembro desconectado: \(userName) (\(userId))")
-        onlineMembers.remove(userId)
+//        onlineMembers.remove(userId)
+        onlineMembers = onlineMembers.filter { $0.userId != userId }
+
         
         // Show toast
         showToast("\(userName) left")
@@ -345,7 +366,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     func didReceiveRoomUsers(_ users: [RoomUser], room: String) {
         do {
             guard room.lowercased() == groupId.lowercased() else {
-                print("🐛 DEBUG: didReceiveRoomUsers ignorado - room mismatch: \(room) vs \(groupId)")
+                print("🐛 DEBUG: didReceiveRoomUsers ignorado - r   oom mismatch: \(room) vs \(groupId)")
                 return
             }
 
@@ -359,7 +380,11 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
                 if let member = group?.members.first(where: {
                     $0.name.lowercased() == user.userName.lowercased()
                 }) {
-                    onlineMembers.insert(member.id)
+//                    onlineMembers.insert(member.id)
+                    if !onlineMembers.contains(where: { $0.userId == member.user_id }) {
+                        onlineMembers.append(onlineUser(userId: member.user_id, name: member.name))
+                    }
+                    
                     print("✅ Match encontrado: \(user.userName) -> member.id: \(member.id)")
                 } else {
                     print("⚠️ No se encontró match para: \(user.userName)")
@@ -395,7 +420,8 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     
     /// Check if a member is online by their member ID or user ID
     func isMemberOnline(_ memberId: String) -> Bool {
-        onlineMembers.contains(memberId)
+//        onlineMembers.contains(memberId)
+        onlineMembers.contains(where: { $0.userId == memberId })
     }
     
     /// Get DJ member from group
@@ -407,7 +433,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     var listenerMembers: [GroupMember] {
         guard let members = group?.members else { return [] }
         return members.filter { member in
-            member.role != .dj && member.id != currentUserId
+            member.role != .dj && member.user_id != currentUserId
         }
     }
     
@@ -942,8 +968,14 @@ extension GroupDetailViewModel {
             print("📡 Estado inicial de sala obtenido: \(roomState.members.count) miembros")
 
             // Actualizar miembros online basados en el estado de la sala
-            let onlineUserIds = Set(roomState.members.map { $0.odooUserId })
-            onlineMembers = onlineUserIds
+//            let onlineUserIds = Set(roomState.members.map { $0.odooUserId })
+            let onlineUserIds = roomState.members
+            var arrayUserOnline : [onlineUser] = []
+            for member in onlineUserIds {
+                print("🔍 Miembro online: \(member.odooName) (ID: \(member.odooUserId))")
+                arrayUserOnline.append(onlineUser(userId: member.odooUserId, name: member.odooUserId))
+            }
+            onlineMembers = arrayUserOnline
 
             // Si hay estado de reproducción, sincronizar
             if roomState.playbackState.trackUrl != nil {

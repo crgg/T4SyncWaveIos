@@ -260,7 +260,8 @@ final class WebRTCManager: NSObject, ObservableObject {
             // Evento completo de usuario que se unió (con objeto user anidado)
             let room = msg["room"] as? String ?? ""
             if let userObj = msg["user"] as? [String: Any] {
-                let userId = userObj["odooUserId"] as? String ?? userObj["userId"] as? String ?? ""
+//                userId
+                let userId = userObj["userId"] as? String ?? userObj["odooUserId"] as? String ?? ""
                 let userName = userObj["userName"] as? String ?? userObj["odooName"] as? String ?? ""
                 let onlineCount = msg["onlineCount"] as? Int ?? 0
                 print("👥 Usuario conectado (completo): \(userName) (\(userId)) en sala \(room), online: \(onlineCount)")
@@ -273,17 +274,22 @@ final class WebRTCManager: NSObject, ObservableObject {
 
         case "joined":
             // Evento simplificado de compatibilidad
-            let userId = msg["userId"] as? String ?? ""
+//            let userId = msg["userId"] as? String ?? ""
+            let userId = msg["userId"] as? String ?? msg["odooUserId"] as? String ?? ""
             let userName = msg["userName"] as? String ?? ""
             let room = msg["room"] as? String ?? ""
-            print("👤 Usuario conectado (simplificado): \(userName) en sala \(room)")
+            print("👤 Usuario conectado (simplificado): \(userName) en sala \(room) user Id \(userId)")
+                if userId.isEmpty {
+                    print("mierda")
+                }
             DispatchQueue.main.async {
                 self.presenceDelegate?.didMemberJoin(userId: userId, userName: userName, room: room)
             }
             
         case "left":
             // Un usuario dejó la sala
-            let userId = msg["userId"] as? String ?? ""
+            let userId = msg["userId"] as? String ?? msg["odooUserId"] as? String ?? ""
+                
             let userName = msg["userName"] as? String ?? ""
             let room = msg["room"] as? String ?? ""
             print("👋 Usuario desconectado: \(userName) de sala \(room)")
