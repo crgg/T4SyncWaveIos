@@ -14,6 +14,7 @@ struct JoinSend {
     let userId : String
     let UserName : String
     let role : String
+    let trackUrl: String?
 }
 
 enum WebSocketConnectionState {
@@ -42,6 +43,7 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     private let maxReconnectAttempts = 5
     private var reconnectTimer: Timer?
     private var pingTimer: Timer?
+    private var manualDisconnect = false  // Para evitar reconexión automática al desconectar manualmente
 
     override init() {
         super.init()
@@ -50,10 +52,16 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     }
 
     func connect(joinSend: JoinSend) {
+        // Evitar múltiples conexiones simultáneas
+        guard connectionState != .connecting && connectionState != .connected else {
+            print("⚠️ Ya hay una conexión en progreso o activa, ignorando nueva solicitud")
+            return
+        }
+
         // Guardar para reconexión
         lastJoinSend = joinSend
         reconnectAttempts = 0
-        
+
         performConnect(joinSend: joinSend)
     }
     
@@ -66,46 +74,65 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
         
         socket = session.webSocketTask(with: url)
         socket?.resume()
-        
-        let joinMessage = [
-            "type": joinSend.type,
-            "room": joinSend.room,
-            "userId": joinSend.userId,
-            "userName": joinSend.UserName,
-            "role": joinSend.role
-        ]
-        print("📤 ENVIANDO JOIN: \(joinMessage)")
-        send(joinMessage)
+
+        // Pequeño delay antes de enviar el mensaje de join para asegurar que la conexión esté establecida
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let self = self else { return }
+
+            var joinMessage: [String: Any] = [
+                "type": joinSend.type,
+                "room": joinSend.room,
+                "userId": joinSend.userId,
+                "userName": joinSend.UserName,
+                "role": joinSend.role
+            ]
+
+            // Agregar trackUrl si existe
+            if let trackUrl = joinSend.trackUrl {
+                joinMessage["trackUrl"] = trackUrl
+            }
+            print("📤 ENVIANDO JOIN: \(joinMessage)")
+            self.send(joinMessage)
+        }
 
         listen()
         startPingTimer()
-        
+
         connectionState = .connected
+        manualDisconnect = false  // Reset flag cuando se conecta exitosamente
         print("✅ WebSocket conectado")
     }
     
     /// Reconectar usando la última configuración
     func reconnect(joinSend: JoinSend? = nil) {
+        // Evitar reconexiones si ya hay una conexión en progreso
+        guard connectionState != .connecting else {
+            print("⚠️ Ya hay una conexión en progreso, esperando antes de reconectar")
+            return
+        }
+
         let sendData = joinSend ?? lastJoinSend
-        
+
         guard let sendData else {
             print("⚠️ No hay datos de conexión para reconectar")
             return
         }
-        
+
         // Actualizar lastJoinSend si se proporciona uno nuevo
         if joinSend != nil {
             lastJoinSend = joinSend
         }
-        
+
         connectionState = .reconnecting
         print("🔄 Reconectando WebSocket (intento \(reconnectAttempts + 1)/\(maxReconnectAttempts))...")
-        
+
         performConnect(joinSend: sendData)
     }
     
     /// Desconectar y limpiar
     func disconnect() {
+        print("🔌 Desconexión manual iniciada - no reconectar automáticamente")
+        manualDisconnect = true
         stopPingTimer()
         stopReconnectTimer()
         socket?.cancel(with: .goingAway, reason: nil)
@@ -187,6 +214,13 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     
     private func handleConnectionError() {
         guard connectionState != .reconnecting else { return }
+
+        // No reconectar si fue una desconexión manual
+        if manualDisconnect {
+            print("🔌 Desconexión manual detectada - no reconectar")
+            manualDisconnect = false  // Reset para futuras conexiones
+            return
+        }
 
         print("🐛 DEBUG: handleConnectionError() llamado desde: \(Thread.callStackSymbols[1])")
         print("🐛 DEBUG: Estado actual antes del error: \(connectionState)")
@@ -273,7 +307,51 @@ final class WebSocketSignaling: NSObject, ObservableObject, URLSessionWebSocketD
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         print("🔴 WebSocket didClose: \(closeCode)")
-        print("🐛 DEBUG: didCloseWith llamado con closeCode: \(closeCode.rawValue)")
+
+        // No reconectar si fue una desconexión manual
+        if manualDisconnect {
+            print("🔌 Cierre por desconexión manual - no reconectar")
+            manualDisconnect = false  // Reset para futuras conexiones
+            DispatchQueue.main.async {
+                self.connectionState = .disconnected
+            }
+            return
+        }
+
+        // Log detallado del código de cierre
+        switch closeCode {
+        case .normalClosure:
+            print("📋 Cierre normal (1000)")
+        case .goingAway:
+            print("📋 Servidor cerró conexión intencionalmente (1001) - reconectando...")
+        case .protocolError:
+            print("📋 Error de protocolo (1002)")
+        case .unsupportedData:
+            print("📋 Datos no soportados (1003)")
+        case .noStatusReceived:
+            print("📋 No se recibió status (1005)")
+        case .abnormalClosure:
+            print("📋 Cierre anormal (1006)")
+        case .invalidFramePayloadData:
+            print("📋 Payload inválido (1007)")
+        case .policyViolation:
+            print("📋 Violación de política (1008)")
+        case .messageTooBig:
+            print("📋 Mensaje demasiado grande (1009)")
+        case .mandatoryExtensionMissing:
+            print("📋 Extensión obligatoria faltante (1010)")
+        case .internalServerError:
+            print("📋 Error interno del servidor (1011)")
+        case .tlsHandshakeFailure:
+            print("📋 Fallo en handshake TLS (1015)")
+        default:
+            print("📋 Código de cierre desconocido: \(closeCode.rawValue)")
+        }
+
+        if let reason = reason, let reasonString = String(data: reason, encoding: .utf8) {
+            print("📋 Razón del cierre: \(reasonString)")
+        }
+
         DispatchQueue.main.async {
             self.connectionState = .disconnected
             self.scheduleReconnect()

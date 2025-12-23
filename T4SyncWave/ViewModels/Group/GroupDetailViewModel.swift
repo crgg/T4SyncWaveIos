@@ -590,18 +590,10 @@ extension GroupDetailViewModel {
     private func schedulePlaybackStateRequest() {
         stopPlaybackStateRequestTimer()
 
-        // Solicitar estado de playback cada 3 segundos durante 30 segundos
-        // por si la solicitud inicial no llega o se pierde
-        playbackStateRequestTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                guard let self, self.isListener else { return }
-                self.requestPlaybackState()
-            }
-        }
-
-        // Detener después de 30 segundos
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30.0) { [weak self] in
-            self?.stopPlaybackStateRequestTimer()
+        // SOLO UNA solicitud inicial, sin timer continuo para evitar sobrecargar el servidor
+        if isListener {
+            print("🎧 Enviando solicitud inicial de estado de playback")
+            requestPlaybackState()
         }
     }
 
