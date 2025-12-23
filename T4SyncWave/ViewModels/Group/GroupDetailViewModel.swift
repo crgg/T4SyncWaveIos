@@ -661,9 +661,14 @@ extension GroupDetailViewModel {
         let currentTime = Date().timeIntervalSince1970
         let messageTime = Double(state.timestamp)  // Ya está en segundos
         let messageAge = currentTime - messageTime
-        let adjustedRemotePosition = state.position + messageAge // Ajustar por el tiempo que tardó el mensaje
 
-        print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
+        // Validar que el timestamp sea razonable (±10 minutos)
+        let maxReasonableAge = 600.0  // 10 minutos
+        let validMessageAge = abs(messageAge) > maxReasonableAge ? 0.0 : messageAge
+
+        let adjustedRemotePosition = state.position + validMessageAge // Ajustar por el tiempo que tardó el mensaje
+
+        print("📊 Debug: messageAge=\(String(format: "%.2f", messageAge))s, validAge=\(String(format: "%.2f", validMessageAge))s, adjustedPosition=\(String(format: "%.2f", adjustedRemotePosition))")
 
         // Sincronizar posición con lógica mejorada
         let diff = abs(audio.currentTime - adjustedRemotePosition)
