@@ -33,6 +33,9 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
     // Mute state for listeners
     @Published var isMuted: Bool = false
 
+    // DJ mute (for monitoring without hearing)
+    @Published var isDJMuted: Bool = false
+
     // Repeat mode
     var isRepeatEnabled: Bool {
         get { audio.isRepeatEnabled }
@@ -64,6 +67,12 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         self.groupId = groupId
         self.isListener = isListener
         self.currentUserId = SessionStore.shared.loadUser()?.id ?? ""
+
+        // Cargar estado de mute del DJ desde UserDefaults
+        if !isListener {
+            self.isDJMuted = UserDefaults.standard.isDJMuted()
+            print("🎛️ DJ mute cargado desde UserDefaults: \(isDJMuted)")
+        }
         rtc.playbackDelegate = self
         rtc.roleDelegate = self
         rtc.presenceDelegate = self
@@ -91,9 +100,10 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
 
         // Observer para cuando la música termina localmente
         NotificationCenter.default.publisher(for: .audioDidFinishPlaying)
-            .sink { [weak self] _ in
+            .sink { [weak self] notification in
                 Task { @MainActor in
-                    self?.handleAudioDidFinish()
+                    let willRepeat = (notification.object as? [String: Bool])?["willRepeat"] ?? false
+                    self?.handleAudioDidFinish(willRepeat: willRepeat)
                 }
             }
             .store(in: &cancellables)
@@ -109,12 +119,24 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         // Opcional: pausar timers para ahorrar batería
     }
 
-    private func handleAudioDidFinish() {
+    private func handleAudioDidFinish(willRepeat: Bool = false) {
         print("🏁 Música terminó localmente")
-        // Solo marcar como terminada si estamos reproduciendo
-        // No pausar automáticamente ya que el DJ podría reiniciar
-        if isPlaying && !isRepeatEnabled {
+
+        if willRepeat {
+            // Se va a repetir: avisar a listeners que se reinicia la canción
+            print("🔁 DJ va a repetir la canción - avisando a listeners")
+            if !isListener {
+                // Enviar estado con position = 0 e isPlaying = true
+                print("🎛️ DJ: Enviando playback-state (reinicio por repeat) a listeners")
+                broadcastPlayback(newTimeFromBackFoward: 0.0, overrideIsPlaying: true)
+            }
+        } else if isPlaying && !isRepeatEnabled {
+            // Música terminó sin repeat: avisar que terminó
             print("🎵 Música terminó, esperando comando del DJ para continuar")
+            if !isListener {
+                print("🎛️ DJ: Enviando playback-state (terminó) a listeners")
+                broadcastPlayback()
+            }
         }
     }
     
@@ -309,7 +331,7 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
                 if !onlineMembers.contains(where: { $0.userId == member.user_id }) {
                     onlineMembers.append(onlineUser(userId: member.user_id, name: member.name))
                 }
-                print("✅ Miembro actual marcado como online por nombre: \(member.id)")
+                print("✅ Miembro actual marcado como online por noOgmbre: \(member.id)")
             }
         }
         
@@ -449,25 +471,64 @@ final class GroupDetailViewModel: ObservableObject, WebRTCPlaybackDelegate, WebR
         }
     }
 
+    // MARK: - DJ Mute Control (Solo para DJ)
+    func toggleDJMute() {
+        guard isListener == false else {
+            print("❌ Solo el DJ puede usar mute")
+            return
+        }
+
+        isDJMuted.toggle()
+        if isDJMuted {
+            audio.mute()
+        } else {
+            audio.unmute()
+        }
+
+        // Guardar estado en UserDefaults
+        UserDefaults.standard.setDJMuted(isDJMuted)
+
+        print("🎛️ DJ mute: \(isDJMuted ? "ACTIVADO" : "DESACTIVADO") (guardado)")
+    }
+
+    func muteDJ() {
+        guard isListener == false else { return }
+        isDJMuted = true
+        audio.mute()
+        print("🎛️ DJ mute ACTIVADO")
+    }
+
+    func unmuteDJ() {
+        guard isListener == false else { return }
+        isDJMuted = false
+        audio.unmute()
+        print("🎛️ DJ mute DESACTIVADO")
+    }
+
     func toggleRepeat() {
         audio.toggleRepeat()
         print("🔁 Repeat \(audio.isRepeatEnabled ? "activado" : "desactivado")")
     }
-    func seek(to seconds: Double) {
-
+    func seek(to seconds: Double, donde : String = "") {
+        if donde == "backward" {
+            print("🔎 a cambiar \(seconds)")
+        }
         audio.seek(to: seconds)
-
+        if donde == "backward" {
+            print("🔎 a despues del seek  \( audio.currentTime)")
+        }
         group?.currentTimeMs = Int(seconds * 1000)
 
         // Solo el controller envía
         if !isListener {
-            broadcastPlayback()
+            broadcastPlayback(newTimeFromBackFoward: seconds )
         }
     }
     
     func skipBackward() {
         let newTime = max(0, localCurrentTime - 15)
-        seek(to: newTime)
+        print("⏪ newtme \(newTime)")
+        seek(to: newTime, donde : "backward")
         localCurrentTime = newTime
     }
     
@@ -513,7 +574,7 @@ extension GroupDetailViewModel {
         }
 
         // Marcar como inicializado
-        isInitialized = true
+        isInitialized = true  
         print("✅ Conexión al grupo inicializada correctamente")
     }
     func togglePlayPause() {
@@ -533,7 +594,7 @@ extension GroupDetailViewModel {
                 // Pequeña pausa para asegurar que el seek se complete
                 Task { @MainActor in
                     try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 segundos
-                    self.startPlaying(track)
+                    self.startPlaying(track)                   
                 }
                 return
             }
@@ -567,17 +628,25 @@ extension GroupDetailViewModel {
         audio.play()                 // 👈 async
         broadcastPlayback()
         startUITimer()
+
+        // Aplicar mute del DJ si está activado
+        if isDJMuted && !isListener {
+            audio.mute()
+        }
         
     }
     
-    private func broadcastPlayback() {
-
+    private func broadcastPlayback(newTimeFromBackFoward : Double = 0, overrideIsPlaying: Bool? = nil) {
+        print("🔎 Actualizando playbackState antes: \(newTimeFromBackFoward)")
+        let newtime = newTimeFromBackFoward > 0 ? newTimeFromBackFoward :  audio.currentTime
+        let isPlayingState = overrideIsPlaying ?? audio.isPlaying
+        print("🔎 Actualizando playbackState: \(newtime), isPlaying: \(isPlayingState)")
         guard let groupModel = self.group else { return }
         let state = PlaybackState(
             roomId: groupModel.id,
             trackUrl: selectedTrack?.fileURL.absoluteString,
-            position: audio.currentTime,
-            isPlaying: audio.isPlaying,
+            position: newtime,
+            isPlaying: isPlayingState,
             timestamp: Int(Date().timeIntervalSince1970)
         )
         
@@ -585,7 +654,7 @@ extension GroupDetailViewModel {
         let payload: [String: Any] = [
             "type": "playback-state",
             "roomId": groupModel.id,
-            "position": audio.currentTime,
+            "position": newtime,
             "trackUrl": selectedTrack?.fileURL.absoluteString ?? nil,
             "isPlaying": audio.isPlaying,
             "timestamp": Int(Date().timeIntervalSince1970)

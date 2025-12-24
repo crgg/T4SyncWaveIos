@@ -85,7 +85,11 @@ struct GroupDetailView: View {
                     },
                     onToggleMute: {
                         vm.toggleMute()
-                    }
+                    },
+                    onToggleDJMute: {
+                        vm.toggleDJMute()
+                    },
+                    isDJMuted: vm.isDJMuted
                 )
                 .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
                 .listRowBackground(Color.clear)

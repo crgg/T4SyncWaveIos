@@ -304,7 +304,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "177"
             endingLineNumber = "177"
-            landmarkName = "seek(to:)"
+            landmarkName = "pause()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -702,9 +702,9 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "482"
-            endingLineNumber = "482"
-            landmarkName = "deinit"
+            startingLineNumber = "476"
+            endingLineNumber = "476"
+            landmarkName = "toggleDJMute()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -776,15 +776,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "7DC416BB-1530-4476-BC80-F2338A0AB8CF"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "348"
-            endingLineNumber = "348"
-            landmarkName = "didMemberJoin(userId:userName:room:)"
+            startingLineNumber = "342"
+            endingLineNumber = "342"
+            landmarkName = "markCurrentUserOnline()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -798,9 +798,9 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "342"
-            endingLineNumber = "342"
-            landmarkName = "didMemberJoin(userId:userName:room:)"
+            startingLineNumber = "336"
+            endingLineNumber = "336"
+            landmarkName = "markCurrentUserOnline()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -846,9 +846,9 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "477"
-            endingLineNumber = "477"
-            landmarkName = "skipForward()"
+            startingLineNumber = "471"
+            endingLineNumber = "471"
+            landmarkName = "toggleMute()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -888,7 +888,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "09E3FFD3-BB17-49F2-AD0A-6217421A5E5F"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
@@ -896,7 +896,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "126"
             endingLineNumber = "126"
-            landmarkName = "reconnectIfNeeded()"
+            landmarkName = "handleAudioDidFinish(willRepeat:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1086,9 +1086,9 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "376"
-            endingLineNumber = "376"
-            landmarkName = "didReceiveRoomUsers(_:room:)"
+            startingLineNumber = "370"
+            endingLineNumber = "370"
+            landmarkName = "didMemberJoin(userId:userName:room:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1102,55 +1102,25 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "967"
-            endingLineNumber = "967"
-            landmarkName = "fetchInitialRoomState()"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "295914AD-10DB-4924-BBF7-8469A47BD5E9 - 1505c96448a87e9f"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for T4SyncWave.GroupDetailViewModel.fetchInitialRoomState() async -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "967"
-                  endingLineNumber = "967">
-               </Location>
-               <Location
-                  uuid = "295914AD-10DB-4924-BBF7-8469A47BD5E9 - c20770435ebe10fc"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(2) await resume partial function for T4SyncWave.GroupDetailViewModel.fetchInitialRoomState() async -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "967"
-                  endingLineNumber = "967">
-               </Location>
-            </Locations>
+            startingLineNumber = "968"
+            endingLineNumber = "968"
+            landmarkName = "GroupDetailViewModel"
+            landmarkType = "21">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "C5B461AB-D47A-48E2-8D8F-DDB1AF81ECA8"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "385"
-            endingLineNumber = "385"
-            landmarkName = "didReceiveRoomUsers(_:room:)"
+            startingLineNumber = "379"
+            endingLineNumber = "379"
+            landmarkName = "didMemberLeave(userId:userName:room:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1158,15 +1128,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "463DC1D7-CE92-4713-B47E-A46F7FDF9B87"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "310"
-            endingLineNumber = "310"
-            landmarkName = "markCurrentUserOnline()"
+            startingLineNumber = "304"
+            endingLineNumber = "304"
+            landmarkName = "didReceiveRole(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1174,15 +1144,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "FF9CD0EA-97C0-4823-A5C4-DA44F8BD0EA2"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "321"
-            endingLineNumber = "321"
-            landmarkName = "markCurrentUserOnline()"
+            startingLineNumber = "315"
+            endingLineNumber = "315"
+            landmarkName = "didReceiveRole(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1190,15 +1160,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "FBC70DF7-EEE3-49AB-B82A-6FB55F86A95A"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "340"
-            endingLineNumber = "340"
-            landmarkName = "didMemberJoin(userId:userName:room:)"
+            startingLineNumber = "334"
+            endingLineNumber = "334"
+            landmarkName = "markCurrentUserOnline()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1222,53 +1192,23 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "A7B85620-C507-41F5-BCA8-0B517B8D037B"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "359"
-            endingLineNumber = "359"
-            landmarkName = "didMemberLeave(userId:userName:room:)"
+            startingLineNumber = "353"
+            endingLineNumber = "353"
+            landmarkName = "didMemberJoin(userId:userName:room:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "A7B85620-C507-41F5-BCA8-0B517B8D037B - fbd5e00016e56598"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "T4SyncWave.GroupDetailViewModel.didMemberLeave(userId: Swift.String, userName: Swift.String, room: Swift.String) -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "359"
-                  endingLineNumber = "359">
-               </Location>
-               <Location
-                  uuid = "A7B85620-C507-41F5-BCA8-0B517B8D037B - 52c000e809d385a"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (T4SyncWave.onlineUser) -&gt; Swift.Bool in T4SyncWave.GroupDetailViewModel.didMemberLeave(userId: Swift.String, userName: Swift.String, room: Swift.String) -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "359"
-                  endingLineNumber = "359">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "36CE2887-A4CE-4568-A346-E951068448B7"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/Core/Networking/WebRTCManager.swift"
@@ -1284,7 +1224,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "5208854F-4D44-4BF4-BA82-69F0F4B74EB4"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/Core/Networking/WebRTCManager.swift"
@@ -1294,51 +1234,21 @@
             endingLineNumber = "296"
             landmarkName = "handleSignaling(_:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "5208854F-4D44-4BF4-BA82-69F0F4B74EB4 - 27acfd77f293ef3a"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "T4SyncWave.WebRTCManager.handleSignaling(Swift.Dictionary&lt;Swift.String, Any&gt;) -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/Core/Networking/WebRTCManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "296"
-                  endingLineNumber = "296">
-               </Location>
-               <Location
-                  uuid = "5208854F-4D44-4BF4-BA82-69F0F4B74EB4 - 4ffa2d7eda6b4189"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #6 @Swift.MainActor () -&gt; () in T4SyncWave.WebRTCManager.handleSignaling(Swift.Dictionary&lt;Swift.String, Any&gt;) -&gt; ()"
-                  moduleName = "T4SyncWave.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ramongajardo/ios_projects/T4SyncWave/T4SyncWave/Core/Networking/WebRTCManager.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "297"
-                  endingLineNumber = "297">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "7E8F4AB7-EE64-4172-B8EB-21807FE3CE53"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "378"
-            endingLineNumber = "378"
-            landmarkName = "didReceiveRoomUsers(_:room:)"
+            startingLineNumber = "372"
+            endingLineNumber = "372"
+            landmarkName = "didMemberJoin(userId:userName:room:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1346,15 +1256,15 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "0AA2BBEC-34DE-4847-A307-47B4428F5894"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "344"
-            endingLineNumber = "344"
-            landmarkName = "didMemberJoin(userId:userName:room:)"
+            startingLineNumber = "338"
+            endingLineNumber = "338"
+            landmarkName = "markCurrentUserOnline()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1384,9 +1294,169 @@
             filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
-            landmarkName = "load()"
+            startingLineNumber = "138"
+            endingLineNumber = "138"
+            landmarkName = "handleAudioDidFinish(willRepeat:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "0CB61D58-2BEC-4948-8071-C39A61FB1DD4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "513"
+            endingLineNumber = "513"
+            landmarkName = "seek(to:donde:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3161571C-6A5D-4A9A-A721-0AEE30B67706"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "497"
+            endingLineNumber = "497"
+            landmarkName = "muteDJ()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "81CD746F-08A9-4188-AE7A-6DD50C5883FD"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "642"
+            endingLineNumber = "642"
+            landmarkName = "broadcastPlayback(newTimeFromBackFoward:overrideIsPlaying:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7B0B8C22-E8C9-4AA4-A0BB-C6CF0D02AC2E"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "624"
+            endingLineNumber = "624"
+            landmarkName = "startPlaying(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "712628E8-49BF-4C5B-A327-ECCC77626CAC"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "718"
+            endingLineNumber = "718"
+            landmarkName = "requestPlaybackState()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "7E369656-2578-48FE-8164-C53548794AE9"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "495"
+            endingLineNumber = "495"
+            landmarkName = "muteDJ()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "30269DE2-A422-4B94-B3C8-A11649F0E214"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "510"
+            endingLineNumber = "510"
+            landmarkName = "toggleRepeat()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "C935D52A-4822-43F2-A5E9-E8CC9A509655"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "630"
+            endingLineNumber = "630"
+            landmarkName = "startPlaying(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3365C811-30AF-43D4-812E-B3405E5D4963"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/ViewModels/Group/GroupDetailViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "125"
+            endingLineNumber = "125"
+            landmarkName = "handleAudioDidFinish(willRepeat:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "EC1846EE-3AC1-4FBA-B3A1-8480287F5EEB"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "T4SyncWave/Core/Audio/AudioPlayerManager.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "135"
+            endingLineNumber = "135"
+            landmarkName = "cleanupCurrentPlayer()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

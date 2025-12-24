@@ -42,9 +42,9 @@ struct MemberRow: View {
                             .foregroundColor(.green)
                     }
                 }
-                Text(member.email)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+//                Text(member.email)
+//                    .font(.caption)
+//                    .foregroundColor(.secondary)
             }
 
             Spacer()

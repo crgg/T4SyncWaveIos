@@ -24,6 +24,8 @@ struct NowPlayingCard: View {
     var onForward: (() -> Void)? = nil
     var onToggleRepeat: (() -> Void)? = nil
     var onToggleMute: (() -> Void)? = nil // For listeners
+    var onToggleDJMute: (() -> Void)? = nil // For DJ - mute without hearing
+    var isDJMuted: Bool = false // DJ mute state
     
     // Helper para formatear tiempo mm:ss
     private func formatTime(_ seconds: Double) -> String {
@@ -150,7 +152,19 @@ struct NowPlayingCard: View {
     
     // MARK: - DJ Controls (full control)
     private func djControls(_ state: NowPlayingUIState) -> some View {
-        HStack(spacing: 32) {
+        HStack(spacing: 20) {
+            // 🔇 Botón Mute DJ
+            Button(action: {
+                onToggleDJMute?()
+            }) {
+                Image(systemName: isDJMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 20))
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(isDJMuted ? .red : .primary)
+
             // 🔁 Botón Repetir
             Button(action: {
                 onToggleRepeat?()

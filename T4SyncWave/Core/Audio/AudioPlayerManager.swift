@@ -21,6 +21,7 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
     @Published private(set) var duration: Double = 0
     @Published private(set) var isReadyToPlay: Bool = false
     @Published var isRepeatEnabled: Bool = false  // 🔁 Modo repetir
+    @Published var isMuted: Bool = false  // 🔇 Mute para DJ
     public var currentURL: URL?
     
     private var shouldAutoPlay = false
@@ -48,8 +49,9 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
             print("🏁 Música terminada")
             
             if isRepeatEnabled {
-                // Repetir: reiniciar y seguir reproduciendo
+                // Repetir: notificar que se va a repetir y luego reiniciar
                 print("🔁 Repitiendo...")
+                NotificationCenter.default.post(name: .audioDidFinishPlaying, object: ["willRepeat": true])
                 seek(to: 0)
                 currentTime = 0
                 player?.play()
@@ -159,6 +161,13 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         player?.play()
         isPlaying = true
         updatePlaybackRate(1.0)
+
+        // Aplicar estado de mute si está activado
+        if isMuted {
+            player?.volume = 0.0
+        } else {
+            player?.volume = 1.0
+        }
     }
 
     func pause() {
@@ -166,11 +175,37 @@ final class AudioPlayerManager: NSObject,  ObservableObject {
         isPlaying = false
         updatePlaybackRate(0.0)
     }
-    
-    /// Set volume (0.0 = muted, 1.0 = full volume)
+
+    // MARK: - Volume/Mute Control
     func setVolume(_ volume: Float) {
         player?.volume = volume
+        isMuted = (volume == 0.0)
     }
+
+    func mute() {
+        player?.volume = 0.0
+        isMuted = true
+        print("🔇 Audio muteado (DJ mode)")
+    }
+
+    func unmute() {
+        player?.volume = 1.0
+        isMuted = false
+        print("🔊 Audio activado")
+    }
+
+    func toggleMute() {
+        if isMuted {
+            unmute()
+        } else {
+            mute()
+        }
+    }
+    
+    /// Set volume (0.0 = muted, 1.0 = full volume)
+//    func setVolume(_ volume: Float) {
+//        player?.volume = volume
+//    }
 
     // MARK: - Seek
     func seek(to time: Double) {

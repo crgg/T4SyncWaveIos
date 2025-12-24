@@ -27,7 +27,8 @@ extension UserDefaults {
         case current_load_number
         case current_url_avatar
         case customer_type
-        
+        case djMuted
+
     }
     
     func setLoggedIn(_ value: Bool) {
@@ -38,5 +39,15 @@ extension UserDefaults {
     
     func isLoggedIn()-> Bool {
         return bool(forKey: Keys.isLoggedIn.rawValue)
+    }
+
+    // DJ Mute state persistence
+    func setDJMuted(_ value: Bool) {
+        set(value, forKey: Keys.djMuted.rawValue)
+        synchronize()
+    }
+
+    func isDJMuted() -> Bool {
+        return bool(forKey: Keys.djMuted.rawValue)
     }
 }
